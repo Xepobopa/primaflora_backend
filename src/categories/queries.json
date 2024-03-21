@@ -1,0 +1,6 @@
+{
+  "getAllCategories": "WITH RECURSIVE category_path (id, title, path) AS\n                (\n                  SELECT id, name, name as path\n                    FROM category\n                    WHERE \"parentId\" IS NULL\n                  UNION ALL\n                  SELECT c.id, c.\"name\", CONCAT(cp.path, ' > ', c.name)\n                    FROM category_path AS cp JOIN category AS c\n                      ON cp.id = c.\"parentId\"\n                )\n                SELECT * FROM category_path\n                ORDER BY path;"
+
+
+
+}
