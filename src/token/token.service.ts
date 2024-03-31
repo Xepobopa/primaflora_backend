@@ -27,16 +27,18 @@ export class TokenService {
         return { accessToken, refreshToken };
     }
 
+
     /**
-     * Verify and returns payload if token is valid
-     * @param token - token that will be verified
+     * Verify and return payload if token is valid
+     * @param token  -  Token that will be verified
+     * @param tokenType  -  'access' or 'refresh'
      */
-    public verifyRefreshToken(token: string) {
+    public verifyToken(token: string, tokenType: 'access' | 'refresh') {
         try {
             return this.jwtService.verify(
                 token,
                 {
-                    secret: this.configService.get<string>('SECRET_REFRESH'),
+                    secret: this.configService.get<string>(tokenType === 'access' ? 'SECRET_ACCESS': 'SECRET_REFRESH'),
                     ignoreExpiration: false,
                     algorithms: ['HS256'],
                 });

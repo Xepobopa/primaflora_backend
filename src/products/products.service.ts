@@ -21,8 +21,6 @@ export class ProductsService {
     }
 
     public async findAllByQuery(query: ProductQueryDto) {
-        console.log('QUERY: ', query);
-
         for (const param in query) {
             switch (param) {
                 case 'categoryId':
@@ -33,6 +31,10 @@ export class ProductsService {
                     throw new BadRequestException(`Unknown query param: ${param}=${query[param]}`);
             }
         }
+    }
+
+    public async findOneById(uuid: string) {
+        return await this.productRepository.findOneOrFail({ where: { uuid } });
     }
 
     update(id: number, updateProductDto: UpdateProductDto) {

@@ -1,5 +1,6 @@
 import { AbstractEntity } from './abstract.entity';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { CartEntity } from './cart.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity extends AbstractEntity {
@@ -26,4 +27,7 @@ export class UserEntity extends AbstractEntity {
 
     @Column('boolean', { nullable: true })
     public consultation_allowed: boolean;
+
+    @OneToMany(() => CartEntity, cart => cart.user)
+    public cart: CartEntity[];
 }

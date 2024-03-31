@@ -20,6 +20,7 @@ export class UserService {
             phone_allowed: newUser.phone_allowed,
             is_activated: false,
             password: await hash(newUser.password, 10),
+            cart: [],
         });
     }
 

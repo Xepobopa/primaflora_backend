@@ -43,7 +43,7 @@ export class AuthorizationService {
 
         console.log('[INFO] SignInPassword: ', signIn.password)
         if (!(await compare(signIn.password, user.password))) {
-            throw new BadRequestException('Password is wrong!');
+            throw new BadRequestException('Password is wrong!', { cause: 'Password is wrong!', description: 'Password is wrong!' });
         }
 
         const tokens = this.tokenService.generateTokens({...user});
@@ -51,7 +51,7 @@ export class AuthorizationService {
     }
 
     public async refreshToken(oldToken: string) {
-        const decoded: UserEntity = this.tokenService.verifyRefreshToken(oldToken);
+        const decoded: UserEntity = this.tokenService.verifyToken(oldToken, 'refresh');
 
         if (!decoded) {
             throw new UnauthorizedException();
@@ -63,7 +63,7 @@ export class AuthorizationService {
     }
 
     public async logout(refreshToken: string) {
-        const { exp, jti, uuid } = this.tokenService.verifyRefreshToken(refreshToken);
+        const { exp, jti, uuid } = this.tokenService.verifyToken(refreshToken, 'refresh');
 
         await this.blackListToken(jti, uuid, exp);
     }

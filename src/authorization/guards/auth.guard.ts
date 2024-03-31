@@ -16,7 +16,7 @@ export class AuthGuard implements CanActivate {
         }
 
         // verify function check if token verified or throw new UnauthorizedException();
-        request['user'] = this.tokenService.verifyRefreshToken(token);
+        request['user'] = this.tokenService.verifyToken(token, 'refresh');
 
         return true;
     }

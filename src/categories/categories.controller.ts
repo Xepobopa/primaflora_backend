@@ -22,6 +22,21 @@ export class CategoriesController {
         return this.categoriesService.findByCategoryName(categoryName);
     }
 
+    @Get('/getChildrenOnly/:categoryName')
+    public async findChildrenOnly(@Param('categoryName') categoryName: string) {
+        return this.categoriesService.findChildrenOnlyByCategoryName(categoryName);
+    }
+
+    @Get('/getChildrenOnlyById/:id')
+    public async findChildrenOnlyById(@Param('id') id: number) {
+        return this.categoriesService.findChildrenOnlyByCategoryId(id);
+    }
+
+    @Get('/getSiblingsById/:id')
+    public async findSiblingsById(@Param('id') id: number) {
+        return this.categoriesService.findSiblingsById(id);
+    }
+
     @Get('/getProducts/:categoryName')
     public async findProductsByCategory(@Param('categoryName') categoryName: string) {
         return this.categoriesService.findProductsByCategoryName(categoryName);
