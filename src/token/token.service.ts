@@ -16,6 +16,8 @@ export class TokenService {
             secret: this.configService.get<string>('SECRET_ACCESS'),
             expiresIn: this.configService.get<string>('JWT_EXPIRES_IN_SHORT'),
             algorithm: 'HS256',
+            allowInvalidAsymmetricKeyTypes: false,
+            allowInsecureKeySizes: false,
         });
         const refreshToken = this.jwtService.sign(payload, {
             secret: this.configService.get<string>('SECRET_REFRESH'),
@@ -38,7 +40,7 @@ export class TokenService {
             return this.jwtService.verify(
                 token,
                 {
-                    secret: this.configService.get<string>(tokenType === 'access' ? 'SECRET_ACCESS': 'SECRET_REFRESH'),
+                    secret: tokenType === 'access' ? this.configService.get<string>('SECRET_ACCESS') : this.configService.get<string>('SECRET_REFRESH'),
                     ignoreExpiration: false,
                     algorithms: ['HS256'],
                 });

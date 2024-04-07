@@ -10,6 +10,7 @@ import { TokenModule } from './token/token.module';
 import { ProductsModule } from './products/products.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CartModule } from './cart/cart.module';
+import { LikeModule } from './like/like.module';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { CartModule } from './cart/cart.module';
         ProductsModule,
         CategoriesModule,
         CartModule,
+        LikeModule,
     ],
 })
 export class AppModule {

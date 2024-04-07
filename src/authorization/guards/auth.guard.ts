@@ -12,17 +12,17 @@ export class AuthGuard implements CanActivate {
         const token = this.extractTokenFromRequest(request);
 
         if (!token) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException("Can't find token in headers");
         }
 
         // verify function check if token verified or throw new UnauthorizedException();
-        request['user'] = this.tokenService.verifyToken(token, 'refresh');
+        request['user'] = this.tokenService.verifyToken(token, 'access');
 
         return true;
     }
 
     private extractTokenFromRequest(request: Request) {
-        const [type, token] = request.headers.authorization?.split('') ?? [];
+        const [type, token] = request.headers.authorization?.split(' ') ?? [];
 
         return (type === 'Bearer') ? token : undefined;
     }

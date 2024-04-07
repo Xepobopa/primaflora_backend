@@ -7,7 +7,7 @@ export class UserController {
     constructor(private readonly userService: UserService) {
     }
 
-    @Get('uuid')
+    @Get('/:uuid')
     @UseGuards(AuthGuard)
     public async getUserById(@Param('uuid') uuid: string) {
         return await this.userService.findOneById(uuid);

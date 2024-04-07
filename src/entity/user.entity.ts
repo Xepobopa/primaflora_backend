@@ -1,6 +1,8 @@
 import { AbstractEntity } from './abstract.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { CartEntity } from './cart.entity';
+import { ProductEntity } from './product.entity';
+import { LikeEntity } from './like.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity extends AbstractEntity {
@@ -30,4 +32,7 @@ export class UserEntity extends AbstractEntity {
 
     @OneToMany(() => CartEntity, cart => cart.user)
     public cart: CartEntity[];
+
+    @OneToMany(() => LikeEntity, like => like.user)
+    public likes: LikeEntity[];
 }

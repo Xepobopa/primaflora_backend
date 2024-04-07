@@ -17,8 +17,8 @@ export class CartService {
     }
 
     async create(newCart: CreateCartDto) {
-        const user = await this.userService.findOneById(newCart.user_uuid);
-        const product = await this.productService.findOneById(newCart.product_uuid);
+        const user = await this.userService.findOneById(newCart.userId);
+        const product = await this.productService.findOneById(newCart.productId);
         return this.cartRepository.save({ ...newCart, user, product });
     }
 
@@ -40,6 +40,7 @@ export class CartService {
     }
 
     async remove(uuid: string) {
+        console.log('Elem to delete -> ', uuid);
         return await this.cartRepository.delete({ uuid });
     }
 }

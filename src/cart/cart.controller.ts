@@ -17,12 +17,11 @@ export class CartController {
         return this.cartService.create(newCart);
     }
 
-    @Get('/getAll/:userId')
-    findAll(@Param('userId') userId: string) {
-        // if access token provided
-        // const token = req.headers.authorization.replace('Bearer ', '');
-        // const userFromToken = this.tokenService.verifyToken(token, 'access');
-        return this.cartService.findAll(userId);
+    @Get('/getAll')
+    findAll(@Req() req: Request) {
+        const token = req.headers.authorization.replace('Bearer ', '');
+        const userFromToken = this.tokenService.verifyToken(token, 'access');
+        return this.cartService.findAll(userFromToken.uuid);
     }
 
     @Patch('/:cartItemUuid')
@@ -33,8 +32,8 @@ export class CartController {
         return this.cartService.update(cartItemId, updateCartDto);
     }
 
-    @Delete(':uuid')
-    remove(@Param('uuid') id: string) {
-        return this.cartService.remove(id);
+    @Delete('/:uuid')
+    remove(@Param('uuid') uuid: string) {
+        return this.cartService.remove(uuid);
     }
 }

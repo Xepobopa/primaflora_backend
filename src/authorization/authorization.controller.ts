@@ -26,7 +26,7 @@ export class AuthorizationController {
 
         this.setRefreshCookie(result.refreshToken, res)
             .status(HttpStatus.OK)
-            .send({ user: result.user, token: result.accessToken });
+            .send({ user: result.user, accessToken: result.accessToken, refreshToken: result.refreshToken });
 
         console.log({ access: result.accessToken })
     }
@@ -38,7 +38,7 @@ export class AuthorizationController {
 
         this.setRefreshCookie(result.refreshToken, res)
             .status(HttpStatus.OK)
-            .send(result.user);
+            .send({ accessToken: result.accessToken, user: result.user});
     }
 
     @Post('/logout')
@@ -73,9 +73,9 @@ export class AuthorizationController {
     private getRefreshToken(req: Request) {
         const token = req.cookies[this.cookieName];
 
-        console.log('tokens: ', req.cookies);
+        console.log('req: ', req);
 
-        if (isUndefined(token) || token === '') {
+        if (isUndefined(token) || token === '' || token === null) {
             throw new UnauthorizedException();
         }
 

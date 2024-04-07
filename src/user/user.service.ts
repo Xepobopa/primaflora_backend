@@ -28,6 +28,10 @@ export class UserService {
         return await this.userRepository.findOneOrFail({ where: { uuid } });
     }
 
+    public async findOneByIdWithLikes(uuid: string) {
+        return await this.userRepository.findOneOrFail({ where: { uuid }, relations: { likes: true } });
+    }
+
     public async findOneByLogin(login: string) {
         return await this.userRepository.findOneOrFail({ where: { login } });
     }
@@ -41,10 +45,8 @@ export class UserService {
         //             .execute();
 
         const user = await this.findOneById(uuid);
-
-        if (user.is_activated) {
+        if (user.is_activated)
             throw new BadRequestException('User already activated');
-        }
 
         return await this.userRepository.update({ uuid }, { is_activated: true });
     }

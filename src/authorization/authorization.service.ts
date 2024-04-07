@@ -58,8 +58,8 @@ export class AuthorizationService {
         }
 
         await this.checkIfTokenIsBlackListed(decoded.uuid, oldToken);
-        const user = this.userService.findOneById(decoded.uuid);
-        return { refreshToken: this.tokenService.generateTokens(user).refreshToken, user};
+        const user = await this.userService.findOneById(decoded.uuid);
+        return {...this.tokenService.generateTokens({...user}), user};
     }
 
     public async logout(refreshToken: string) {
