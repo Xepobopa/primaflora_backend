@@ -80,6 +80,7 @@ export class AuthorizationController {
     private getRefreshToken(req: Request) {
         const token = req.cookies[this.cookieName];
         console.log('Token: ', token);
+        console.log(req);
 
         if (isUndefined(token) || token === '' || token === null) {
             throw new UnauthorizedException(

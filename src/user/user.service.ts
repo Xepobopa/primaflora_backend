@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../entity/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { TokenService } from 'src/token/token.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -57,9 +58,10 @@ export class UserService {
         }
     }
 
-    // public async updateUser(userUid: string) {
-    //     return await this.userRepository.update
-    // }
+    public async updateUser(token: string, updateUser: UpdateUserDto) {
+        const payload = this.tokenService.verifyToken(token, 'access');
+        return this.userRepository.update({ uuid: payload.uuid }, { name: 'New value' });
+    }
 
     private generateSixDigitCode() {
         let code = '';
