@@ -6,18 +6,23 @@ import { CategoryEntity } from '../entity/category.entity';
 
 @Injectable()
 export class CategoriesService {
-    constructor(@InjectRepository(CategoryEntity) private categoryRepository: Repository<CategoryEntity>) {
-    }
+    constructor(
+        @InjectRepository(CategoryEntity)
+        private categoryRepository: Repository<CategoryEntity>
+    ) {}
 
     public async create(createCategoryDto: CreateCategoryDto) {
-        const parent = await this.categoryRepository.findOneOrFail({ where: { id: createCategoryDto.parent_id } });
-        return this.categoryRepository.save({ parent, name: createCategoryDto.name  });
+        const parent = await this.categoryRepository.findOneOrFail({
+            where: { id: createCategoryDto.parent_id },
+        });
+        return this.categoryRepository.save({
+            parent,
+            name: createCategoryDto.name,
+        });
     }
 
     public async findAll() {
-        return this
-            .categoryRepository
-            .query(`
+        return this.categoryRepository.query(`
                 WITH RECURSIVE category_path (id, name, path) AS
                 (
                   SELECT id, name, name as path
@@ -34,9 +39,7 @@ export class CategoriesService {
     }
 
     public async findByCategoryName(category: string) {
-        return this
-            .categoryRepository
-            .query(`
+        return this.categoryRepository.query(`
                 WITH category_path (id, name, path) AS
                 (
                   SELECT id, name, name as path
@@ -71,12 +74,20 @@ export class CategoriesService {
      */
     public async findChildrenOnlyByCategoryName(category: string) {
         const categoryId = (await this.findOneByCategory(category)).id;
-        return this.findChildrenOnlyByCategoryId(categoryId);
+        const res = await this.findChildrenOnlyByCategoryId(categoryId);
+        if (res.length > 0) {
+            return res;
+        }
+
+        return {
+            // this is the last category (doesnt contain subcategories). So return categoryId and PATH
+            categoryId,
+            path: (await this.getCategoryPathById(categoryId))[0].path,
+        };
     }
 
     public async findChildrenOnlyByCategoryId(id: number) {
-        return await this
-            .categoryRepository
+        return await this.categoryRepository
             .createQueryBuilder('category')
             .where('category.parentId = :pId', { pId: id })
             .loadAllRelationIds({ relations: ['parent'] })
@@ -102,10 +113,33 @@ export class CategoriesService {
     }
 
     public async findOneById(id: number) {
-        return await this.categoryRepository.findOneOrFail({ where: { id }, loadRelationIds: { relations: ['parent'] } });
+        return await this.categoryRepository.findOneOrFail({
+            where: { id },
+            loadRelationIds: { relations: ['parent'] },
+        });
     }
 
     public async findOneByCategory(category: string) {
-        return await this.categoryRepository.findOneOrFail({ where: { name: category } });
+        return await this.categoryRepository.findOneOrFail({
+            where: { name: category },
+        });
+    }
+
+    private async getCategoryPathById(categoryId: number) {
+        return await this.categoryRepository.query(`
+                WITH RECURSIVE category_path (id, name, path) AS
+                (
+                    SELECT id, name, name as path
+                        FROM category
+                        WHERE "parentId" IS NULL
+                    UNION ALL
+                    SELECT c.id, c."name", CONCAT(cp.path, ' > ', c.name)
+                        FROM category_path AS cp JOIN category AS c
+                        ON cp.id = c."parentId"
+                )
+                SELECT path FROM category_path
+                WHERE id = ${categoryId}
+                ORDER BY path;
+            `);
     }
 }

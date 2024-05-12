@@ -1,19 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as cookieParser from 'cookie-parser'
-import { ValidationPipe } from "@nestjs/common";
-import {ConfigService} from "@nestjs/config";
+import * as cookieParser from 'cookie-parser';
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule, { cors: true });
+    const app = await NestFactory.create(AppModule, {
+        cors: { credentials: true, origin: 'http://localhost:3000' },
+    });
     const config = app.get<ConfigService>(ConfigService);
 
-    //config.get<string>('COOKIE_SECRET')
-    app.use(cookieParser());
-    app.enableCors({ credentials: true, origin: '*' });
+    // app.enableCors({ credentials: true, origin: '*' });
+    app.use(cookieParser(config.get<string>('COOKIE_SECRET')));
     app.useGlobalPipes(new ValidationPipe());
 
-    const server = await app.listen(config.get<number>('PORT'), () => console.log('Host on http://localhost:5000'));
+    const server = await app.listen(config.get<number>('PORT'), () =>
+        console.log('Host on http://localhost:5000')
+    );
 
     const router = server._events.request._router;
     const availableRoutes: [] = router.stack
@@ -22,8 +25,8 @@ async function bootstrap() {
                 return {
                     route: {
                         path: layer.route?.path,
-                        method: layer.route?.stack[0].method
-                    }
+                        method: layer.route?.stack[0].method,
+                    },
                 };
             }
         })

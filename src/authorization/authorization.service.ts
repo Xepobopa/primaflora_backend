@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Inject,
+    Injectable,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
 import { UserService } from '../user/user.service';
 import { MailerService } from '../mailer/mailer.service';
@@ -16,12 +21,10 @@ export class AuthorizationService {
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly userService: UserService,
         private readonly mailerService: MailerService,
-        private readonly tokenService: TokenService,
-    ) {
-    }
+        private readonly tokenService: TokenService
+    ) {}
 
     public async signUp(signUpDto: SignUpDto) {
-
         this.comparePasswords(signUpDto.password1, signUpDto.password2);
 
         const newUser = await this.userService.create({
@@ -33,25 +36,36 @@ export class AuthorizationService {
             phone: signUpDto.phone,
             name: signUpDto.name,
         });
-        // this.mailerService.sendConfirmationEmail(newUser);
+
+        const code = await this.userService.createVerificationCode(
+            newUser as UserEntity
+        );
+        console.log('Code => ', code);
+        this.mailerService.sendConfirmationEmail(newUser, code.code);
+
         return newUser;
     }
 
     public async signIn(signIn: SignInDto) {
         const user = await this.userService.findOneByLogin(signIn.login);
 
-
-        console.log('[INFO] SignInPassword: ', signIn.password)
+        console.log('[INFO] SignInPassword: ', signIn.password);
         if (!(await compare(signIn.password, user.password))) {
-            throw new BadRequestException('Password is wrong!', { cause: 'Password is wrong!', description: 'Password is wrong!' });
+            throw new BadRequestException('Password is wrong!', {
+                cause: 'Password is wrong!',
+                description: 'Password is wrong!',
+            });
         }
 
-        const tokens = this.tokenService.generateTokens({...user});
-        return { ...tokens, user};
+        const tokens = this.tokenService.generateTokens({ ...user });
+        return { ...tokens, user };
     }
 
     public async refreshToken(oldToken: string) {
-        const decoded: UserEntity = this.tokenService.verifyToken(oldToken, 'refresh');
+        const decoded: UserEntity = this.tokenService.verifyToken(
+            oldToken,
+            'refresh'
+        );
 
         if (!decoded) {
             throw new UnauthorizedException();
@@ -59,11 +73,14 @@ export class AuthorizationService {
 
         await this.checkIfTokenIsBlackListed(decoded.uuid, oldToken);
         const user = await this.userService.findOneById(decoded.uuid);
-        return {...this.tokenService.generateTokens({...user}), user};
+        return { ...this.tokenService.generateTokens({ ...user }), user };
     }
 
     public async logout(refreshToken: string) {
-        const { exp, jti, uuid } = this.tokenService.verifyToken(refreshToken, 'refresh');
+        const { exp, jti, uuid } = this.tokenService.verifyToken(
+            refreshToken,
+            'refresh'
+        );
 
         await this.blackListToken(jti, uuid, exp);
     }
@@ -75,24 +92,30 @@ export class AuthorizationService {
 
         const res = [];
         for (const key in keys) {
-            res[key] = await this.cacheManager.get(key)
+            res[key] = await this.cacheManager.get(key);
         }
 
         return res;
     }
 
     private async blackListToken(tokenId: string, userId: string, exp: number) {
-        const now = Date.now()
-        const ttl = (exp - now);
+        const now = Date.now();
+        const ttl = exp - now;
 
         if (ttl > 0) {
             // set new value
-            await this.cacheManager.set(`blacklist:${userId}:${tokenId}`, now, ttl);
+            await this.cacheManager.set(
+                `blacklist:${userId}:${tokenId}`,
+                now,
+                ttl
+            );
         }
     }
 
     private async checkIfTokenIsBlackListed(userId: string, tokenId: string) {
-        const time = await this.cacheManager.get<number>(`blacklist${userId}:${tokenId}`);
+        const time = await this.cacheManager.get<number>(
+            `blacklist${userId}:${tokenId}`
+        );
 
         if (!isUndefined(time)) {
             throw new UnauthorizedException('Invalid token');

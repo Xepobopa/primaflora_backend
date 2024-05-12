@@ -1,0 +1,43 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Backend Server",
+            "type": "shell",
+            "command": "npm",
+            "args": [
+                "run",
+                "start:dev"
+            ],
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Start React Native Server",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "react-native",
+                "start"
+            ],
+            "options": {
+                "cwd": "../frontend/mob/Primaflora"
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "focus": false
+            }
+        }
+    ]
+}

@@ -22,14 +22,13 @@ import { LikeModule } from './like/like.module';
         }),
         TypeOrmModule.forRootAsync(typeOrmAsyncConfig),
         AuthorizationModule,
-        UserModule,
+        CategoriesModule,
+        ProductsModule,
         MailerModule,
         TokenModule,
-        ProductsModule,
-        CategoriesModule,
+        UserModule,
         CartModule,
         LikeModule,
     ],
 })
-export class AppModule {
-}
+export class AppModule {}

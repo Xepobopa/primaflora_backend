@@ -1,0 +1,8 @@
+{
+    "files.eol": "\n",
+    "editor.fontSize": 15,
+    "files.autoSave": "afterDelay",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+}

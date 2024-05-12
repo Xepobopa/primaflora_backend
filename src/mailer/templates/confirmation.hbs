@@ -1,17 +1,19 @@
-<html lang='en'>
-<body>
-<p>Hello {{name}},</p>
-<br/>
-<p>Welcome to [Your app],</p>
-<p>
-    Click
-    <b><a href='{{link}}' target='_blank'>here</a></b>
-    to activate your acount or go to this link:
-    {{link}}
-</p>
-<p><small>This link will expire in an hour.</small></p>
-<br/>
-<p>Best of luck,</p>
-<p>[Your app] Team</p>
-</body>
-</html>
+<html lang="en">
+    <body>
+        <p>Hello {{ name }},</p>
+        <br />
+        <p>Welcome to Primaflora,</p>
+        <p>
+            This is your activation code:
+            <h1>{{ code }}</h1>
+            You can activate your accound by passing this code to Profile
+            Activate Account
+        </p>
+        <p>
+            <small>This code will expire in 10 minutes.</small>
+        </p>
+        <br />
+        <p>Best of luck,</p>
+        <p>Primaflora Team</p>
+    </body>
+</html>;

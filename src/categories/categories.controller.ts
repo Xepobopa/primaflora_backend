@@ -4,8 +4,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 
 @Controller('categories')
 export class CategoriesController {
-    constructor(private readonly categoriesService: CategoriesService) {
-    }
+    constructor(private readonly categoriesService: CategoriesService) {}
 
     @Post('/create')
     create(@Body() createCategoryDto: CreateCategoryDto) {
@@ -24,7 +23,9 @@ export class CategoriesController {
 
     @Get('/getChildrenOnly/:categoryName')
     public async findChildrenOnly(@Param('categoryName') categoryName: string) {
-        return this.categoriesService.findChildrenOnlyByCategoryName(categoryName);
+        return this.categoriesService.findChildrenOnlyByCategoryName(
+            categoryName
+        );
     }
 
     @Get('/getChildrenOnlyById/:id')
@@ -38,7 +39,9 @@ export class CategoriesController {
     }
 
     @Get('/getProducts/:categoryName')
-    public async findProductsByCategory(@Param('categoryName') categoryName: string) {
+    public async findProductsByCategory(
+        @Param('categoryName') categoryName: string
+    ) {
         return this.categoriesService.findProductsByCategoryName(categoryName);
     }
 }

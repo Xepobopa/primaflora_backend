@@ -1,17 +1,24 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { hash } from 'bcrypt';
+import { VerificationEntity } from 'src/entity/verification.entity';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../entity/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { hash } from 'bcrypt';
+import { TokenService } from 'src/token/token.service';
 
 @Injectable()
 export class UserService {
-    constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>) {
-    }
+    constructor(
+        @InjectRepository(UserEntity)
+        private userRepository: Repository<UserEntity>,
+        @InjectRepository(VerificationEntity)
+        private verificationRepository: Repository<VerificationEntity>,
+        private tokenService: TokenService
+    ) {}
 
     public async create(newUser: CreateUserDto) {
-        return this.userRepository.save({
+        return await this.userRepository.save({
             login: newUser.login,
             name: newUser.name,
             phone: newUser.phone,
@@ -24,31 +31,73 @@ export class UserService {
         });
     }
 
+    public async findOneByToken(token: string) {
+        const payload = this.tokenService.verifyToken(token, 'access');
+        return await this.findOneById(payload.uuid);
+    }
+
     public async findOneById(uuid: string) {
         return await this.userRepository.findOneOrFail({ where: { uuid } });
     }
 
     public async findOneByIdWithLikes(uuid: string) {
-        return await this.userRepository.findOneOrFail({ where: { uuid }, relations: { likes: true } });
+        return await this.userRepository.findOneOrFail({
+            where: { uuid },
+            relations: { likes: true },
+        });
     }
 
     public async findOneByLogin(login: string) {
-        return await this.userRepository.findOneOrFail({ where: { login } });
+        try {
+            return await this.userRepository.findOneOrFail({
+                where: { login },
+            });
+        } catch (error) {
+            throw new BadRequestException('User not found');
+        }
     }
 
-    public async activate(uuid: string) {
-        //        return await this.userRepository
-        //             .createQueryBuilder()
-        //             .update(UserEntity)
-        //             .set({ is_activated: true })
-        //             .where("uuid = :uuid", { uuid })
-        //             .execute();
+    // public async updateUser(userUid: string) {
+    //     return await this.userRepository.update
+    // }
 
-        const user = await this.findOneById(uuid);
-        if (user.is_activated)
-            throw new BadRequestException('User already activated');
+    private generateSixDigitCode() {
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += Math.floor(Math.random() * 10);
+        }
+        return code;
+    }
 
-        return await this.userRepository.update({ uuid }, { is_activated: true });
+    public async createVerificationCode(user: UserEntity) {
+        return await this.verificationRepository.save({
+            user,
+            exp: new Date(Date.now() + 1000 * 60 * 10), // 10 minutes
+            code: this.generateSixDigitCode(),
+        });
+    }
+
+    public async activate(code: string) {
+        try {
+            const verify = await this.verificationRepository.findOneOrFail({
+                where: { code },
+                relations: { user: true },
+            });
+
+            console.log('verify: ', verify);
+
+            if (new Date() > new Date(verify.exp)) {
+                this.verificationRepository.delete(verify);
+                throw new BadRequestException('Code expired');
+            }
+
+            return await this.userRepository.save({
+                ...verify.user,
+                is_activated: true,
+            });
+        } catch (error) {
+            throw new BadRequestException('Invalid code');
+        }
     }
 
     // test

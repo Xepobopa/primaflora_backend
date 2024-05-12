@@ -1,7 +1,6 @@
-import { AbstractEntity } from './abstract.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
+import { AbstractEntity } from './abstract.entity';
 import { CartEntity } from './cart.entity';
-import { ProductEntity } from './product.entity';
 import { LikeEntity } from './like.entity';
 
 @Entity({ name: 'user' })

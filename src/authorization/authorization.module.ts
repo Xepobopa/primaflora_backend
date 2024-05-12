@@ -14,7 +14,11 @@ import { CacheModule } from '@nestjs/cache-manager';
             imports: [ConfigModule],
             useFactory: async (configService: ConfigService) => ({
                 secret: configService.get<string>('SECRET'),
-                signOptions: { expiresIn: configService.get<string>('JWT_EXPIRES_IN_SHORT') },
+                signOptions: {
+                    expiresIn: configService.get<string>(
+                        'JWT_EXPIRES_IN_SHORT'
+                    ),
+                },
             }),
             inject: [ConfigService],
         }),
@@ -27,5 +31,4 @@ import { CacheModule } from '@nestjs/cache-manager';
     providers: [AuthorizationService],
     exports: [AuthorizationModule],
 })
-export class AuthorizationModule {
-}
+export class AuthorizationModule {}

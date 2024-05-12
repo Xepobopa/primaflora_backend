@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpStatus, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    HttpStatus,
+    Post,
+    Req,
+    Res,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { AuthorizationService } from './authorization.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
@@ -15,8 +24,6 @@ export class AuthorizationController {
 
     @Post('/sign-up')
     public async singUp(@Body() signUpDto: SignUpDto) {
-        console.log('New User!')
-        console.log(signUpDto)
         return this.authorizationService.signUp(signUpDto);
     }
 
@@ -26,19 +33,23 @@ export class AuthorizationController {
 
         this.setRefreshCookie(result.refreshToken, res)
             .status(HttpStatus.OK)
-            .send({ user: result.user, accessToken: result.accessToken, refreshToken: result.refreshToken });
+            .send({
+                user: result.user,
+                accessToken: result.accessToken,
+                refreshToken: result.refreshToken,
+            });
 
-        console.log({ access: result.accessToken })
+        console.log({ access: result.accessToken });
     }
 
-    @Post('/refreshToken')
+    @Get('/refreshToken')
     public async refreshToken(@Req() req: Request, @Res() res: Response) {
         const oldToken = this.getRefreshToken(req);
         const result = await this.authorizationService.refreshToken(oldToken);
 
         this.setRefreshCookie(result.refreshToken, res)
             .status(HttpStatus.OK)
-            .send({ accessToken: result.accessToken, user: result.user});
+            .send({ accessToken: result.accessToken, user: result.user });
     }
 
     @Post('/logout')
@@ -47,14 +58,10 @@ export class AuthorizationController {
 
         await this.authorizationService.logout(token);
 
-        res.clearCookie(this.cookieName)
-            .status(HttpStatus.OK)
-            .send('Success');
+        res.clearCookie(this.cookieName).status(HttpStatus.OK).send('Success');
     }
     @Post('/confirm-email')
-    public async confirmUserByEmail() {
-
-    }
+    public async confirmUserByEmail() {}
 
     @Get('cache')
     public async getAllCache() {
@@ -62,21 +69,23 @@ export class AuthorizationController {
     }
 
     private setRefreshCookie(token: string, res: Response) {
+        console.log('attack refresh token: ', token);
         return res.cookie(this.cookieName, token, {
             secure: true,
             httpOnly: true,
-            expires: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) // for next 5 days
-        })
+            expires: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // for next 5 days
+        });
     }
-
 
     private getRefreshToken(req: Request) {
         const token = req.cookies[this.cookieName];
-
-        console.log('req: ', req);
+        console.log('Token: ', token);
 
         if (isUndefined(token) || token === '' || token === null) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException(
+                null,
+                'Cant find token in cookies!'
+            );
         }
 
         return token;

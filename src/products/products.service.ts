@@ -21,17 +21,47 @@ export class ProductsService {
     }
 
     public async findAllByQuery(query: ProductQueryDto) {
+        const queryBuilder = this.productRepository.createQueryBuilder();
+
         for (const param in query) {
             switch (param) {
                 case 'categoryId':
                     return await this.categoryService.findProductsByCategoryId(query[param]);
                 case 'categoryName':
                     return await this.categoryService.findProductsByCategoryName(query[param]);
+                case 'isTop':
+                    queryBuilder.orderBy('price_currency', 'ASC')
+                    break;
+                case 'isRelevant':
+                    queryBuilder.orderBy('price_currency', 'DESC')
+                    break;
+                case 'take':
+                    queryBuilder.take(query[param] as number)
+                    break;
                 default:
                     throw new BadRequestException(`Unknown query param: ${param}=${query[param]}`);
             }
         }
+
+        // if no params - return all
+        return await queryBuilder.getMany();
     }
+    //const queryBuilder = this.productRepository.createQueryBuilder('product');
+    //
+    //         for (const param in query) {
+    //             switch (param) {
+    //                 case 'categoryId':
+    //                     queryBuilder.innerJoin('product.category', 'category', `category.id = :${param}`, { [param]: query[param] });
+    //                     break;
+    //                 case 'categoryName':
+    //                     queryBuilder.innerJoin('product.category', 'category', `category.name = :${param}`, { [param]: query[param] });
+    //                     break;
+    //                 default:
+    //                     throw new BadRequestException(`Unknown query param: ${param}=${query[param]}`);
+    //             }
+    //         }
+    //
+    //         return queryBuilder.getMany();
 
     public async findOneById(uuid: string) {
         return await this.productRepository.findOneOrFail({ where: { uuid } });
