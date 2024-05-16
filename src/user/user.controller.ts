@@ -1,7 +1,16 @@
-import { Controller, Get, Param, Patch, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { UserService } from './user.service';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Req,
+    UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '../authorization/guards/auth.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -27,7 +36,10 @@ export class UserController {
 
     @Patch()
     @UseGuards(AuthGuard)
-    public async updateUser(@Req() req: Request, updateUser: UpdateUserDto) {
+    public async updateUser(
+        @Req() req: Request,
+        @Body() updateUser: UpdateUserDto
+    ) {
         const token = this.getTokenFromRequest(req);
         return await this.userService.updateUser(token, updateUser);
     }

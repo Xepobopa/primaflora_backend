@@ -1,6 +1,5 @@
 import { IsBoolean, IsEmail, IsPhoneNumber, IsString } from 'class-validator';
 import { CartDto } from '../../cart/dto/cart.dto';
-import { ProductDto } from '../../products/dto/product.dto';
 
 export class UserDto {
     @IsString()

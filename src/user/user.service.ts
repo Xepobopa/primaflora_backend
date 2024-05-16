@@ -60,7 +60,7 @@ export class UserService {
 
     public async updateUser(token: string, updateUser: UpdateUserDto) {
         const payload = this.tokenService.verifyToken(token, 'access');
-        return this.userRepository.update({ uuid: payload.uuid }, { name: 'New value' });
+        return this.userRepository.update({ uuid: payload.uuid }, updateUser);
     }
 
     private generateSixDigitCode() {
