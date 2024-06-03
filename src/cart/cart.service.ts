@@ -1,24 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCartDto } from './dto/create-cart.dto';
-import { UpdateCartDto } from './dto/update-cart.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CartEntity } from '../entity/cart.entity';
-import { UserService } from '../user/user.service';
 import { ProductsService } from '../products/products.service';
+import { UserService } from '../user/user.service';
+import { CreateCartDto } from './dto/create-cart.dto';
 
 @Injectable()
 export class CartService {
     constructor(
-        @InjectRepository(CartEntity) private cartRepository: Repository<CartEntity>,
+        @InjectRepository(CartEntity)
+        private cartRepository: Repository<CartEntity>,
         private readonly userService: UserService,
-        private readonly productService: ProductsService,
-    ) {
-    }
+        private readonly productService: ProductsService
+    ) {}
 
     async create(newCart: CreateCartDto) {
-        const user = await this.userService.findOneById(newCart.userId);
-        const product = await this.productService.findOneById(newCart.productId);
+        const user = await this.userService.findOneById(newCart.userUId);
+        const product = await this.productService.findOneByUid(
+            newCart.productUId
+        );
         return this.cartRepository.save({ ...newCart, user, product });
     }
 
@@ -31,16 +32,15 @@ export class CartService {
             .getMany();
     }
 
-    async update(cartItemId: string, changes: UpdateCartDto) {
-        return await this.cartRepository
-            .createQueryBuilder()
-            .update({ quantity: changes.quantity })
-            .where('uuid = :cartItemId', { cartItemId })
-            .execute();
-    }
+    // async update(cartItemId: string, changes: UpdateCartDto) {
+    //     return await this.cartRepository
+    //         .createQueryBuilder()
+    //         .update({ quantity: changes.quantity })
+    //         .where('uuid = :cartItemId', { cartItemId })
+    //         .execute();
+    // }
 
     async remove(uuid: string) {
-        console.log('Elem to delete -> ', uuid);
         return await this.cartRepository.delete({ uuid });
     }
 }

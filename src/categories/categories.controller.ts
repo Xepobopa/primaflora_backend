@@ -1,47 +1,26 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Param, Req } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
+import { Request } from 'express';
 
 @Controller('categories')
 export class CategoriesController {
     constructor(private readonly categoriesService: CategoriesService) {}
 
-    @Post('/create')
-    create(@Body() createCategoryDto: CreateCategoryDto) {
-        return this.categoriesService.create(createCategoryDto);
+    @Get('findAllWithSub')
+    public async findAllWithSub() {
+        return await this.categoriesService.findAllWithSub();
     }
 
-    @Get('/getAll')
-    findAll() {
-        return this.categoriesService.findAll();
-    }
-
-    @Get('/:categoryName')
-    public async findCategory(@Param('categoryName') categoryName: string) {
-        return this.categoriesService.findByCategoryName(categoryName);
-    }
-
-    @Get('/getChildrenOnly/:categoryName')
-    public async findChildrenOnly(@Param('categoryName') categoryName: string) {
-        return this.categoriesService.findChildrenOnlyByCategoryName(
-            categoryName
-        );
-    }
-
-    @Get('/getChildrenOnlyById/:id')
-    public async findChildrenOnlyById(@Param('id') id: number) {
-        return this.categoriesService.findChildrenOnlyByCategoryId(id);
-    }
-
-    @Get('/getSiblingsById/:id')
-    public async findSiblingsById(@Param('id') id: number) {
-        return this.categoriesService.findSiblingsById(id);
-    }
-
-    @Get('/getProducts/:categoryName')
-    public async findProductsByCategory(
-        @Param('categoryName') categoryName: string
+    // return subcategories with products. Products have minimal fields to be shown (not description and comments)
+    @Get('/findSubcategoryWithProducts/:subcategoryId')
+    public async findSubcategoryWithProducts(
+        @Param('subcategoryId') subcategoryId: number,
+        @Req() req: Request
     ) {
-        return this.categoriesService.findProductsByCategoryName(categoryName);
+        const token = req.headers.authorization.replace('Bearer ', '');
+        return await this.categoriesService.findSubcategoryWithProducts(
+            subcategoryId,
+            token
+        );
     }
 }

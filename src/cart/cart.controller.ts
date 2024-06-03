@@ -1,15 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
-import { CartService } from './cart.service';
-import { CreateCartDto } from './dto/create-cart.dto';
-import { UpdateCartDto } from './dto/update-cart.dto';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Post,
+    Req,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { TokenService } from '../token/token.service';
+import { CartService } from './cart.service';
+import { CreateCartDto } from './dto/create-cart.dto';
 
 @Controller('cart')
 export class CartController {
     constructor(
         private readonly cartService: CartService,
-        private readonly tokenService: TokenService,
+        private readonly tokenService: TokenService
     ) {}
 
     @Post()
@@ -24,13 +31,13 @@ export class CartController {
         return this.cartService.findAll(userFromToken.uuid);
     }
 
-    @Patch('/:cartItemUuid')
-    update(
-        @Param('cartItemUuid') cartItemId: string,
-        @Body() updateCartDto: UpdateCartDto,
-    ) {
-        return this.cartService.update(cartItemId, updateCartDto);
-    }
+    // @Patch('/:cartItemUuid')
+    // update(
+    //     @Param('cartItemUuid') cartItemId: string,
+    //     @Body() updateCartDto: UpdateCartDto
+    // ) {
+    //     return this.cartService.update(cartItemId, updateCartDto);
+    // }
 
     @Delete('/:uuid')
     remove(@Param('uuid') uuid: string) {

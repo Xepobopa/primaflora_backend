@@ -1,15 +1,12 @@
+import { Column, Entity, OneToMany } from 'typeorm';
 import { AbstractEntity } from './abstract.entity';
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
-import { ProductEntity } from './product.entity';
+import { SubcategoryEntity } from './subcategory.entity';
 
 @Entity('category')
 export class CategoryEntity extends AbstractEntity {
     @Column('varchar')
     public name: string;
 
-    @ManyToOne(() => CategoryEntity, parent => parent.id, { nullable: true })
-    public parent: CategoryEntity;
-
-    @OneToMany(() => ProductEntity, product => product.category)
-    public products: ProductEntity[];
+    @OneToMany(() => SubcategoryEntity, subcategory => subcategory.parent)
+    public childrens: SubcategoryEntity[];
 }

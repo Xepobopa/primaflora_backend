@@ -3,11 +3,11 @@ import { IsNumber, IsString, IsUUID, Min } from 'class-validator';
 export class CartDto {
     @IsString()
     @IsUUID()
-    public userId: string;
+    public userUId: string;
 
     @IsString()
     @IsUUID()
-    public productId: string;
+    public productUId: string;
 
     @IsNumber()
     @Min(1)

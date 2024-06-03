@@ -1,6 +1,7 @@
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { AbstractEntity } from './abstract.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
-import { CategoryEntity } from './category.entity';
+import { SubcategoryEntity } from './subcategory.entity';
+import { CommentEntity } from './comment.entity';
 
 @Entity('product')
 export class ProductEntity extends AbstractEntity {
@@ -10,7 +11,7 @@ export class ProductEntity extends AbstractEntity {
     @Column('varchar')
     public title: string;
 
-    @Column('varchar')
+    @Column('simple-json')
     public desc: string;
 
     @Column('int')
@@ -25,6 +26,9 @@ export class ProductEntity extends AbstractEntity {
     @Column('int')
     public rating: number;
 
-    @ManyToOne(() => CategoryEntity, category => category.products)
-    public category: CategoryEntity;
+    @ManyToOne(() => SubcategoryEntity, subcategory => subcategory.products)
+    public category: SubcategoryEntity;
+
+    @OneToMany(() => CommentEntity, comment => comment.product)
+    public comments: CommentEntity[];
 }

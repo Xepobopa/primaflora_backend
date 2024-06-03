@@ -9,9 +9,8 @@ import { TokenService } from '../token/token.service';
 export class LikeController {
     constructor(
         private readonly likeService: LikeService,
-        private readonly tokenService: TokenService,
-    ) {
-    }
+        private readonly tokenService: TokenService
+    ) {}
 
     @Get('/likes')
     public async getLikedProducts(@Req() req: Request) {
@@ -19,15 +18,22 @@ export class LikeController {
         return await this.likeService.getLikedProducts(payload.uuid);
     }
 
-    @Get('/:productUuid')
-    public async likeProduct(@Param('productUuid') productId: string, @Req() req: Request) {
-        const payload = this.getTokenPayloadFromRequest(req);
-        console.log('payload: ', payload);
-        return await this.likeService.setLike(payload.uuid, productId);
-    }
+    // now like product in /product route
+    // @Get('/:productUuid')
+    // public async likeProduct(
+    //     @Param('productUuid') productId: string,
+    //     @Req() req: Request
+    // ) {
+    //     const payload = this.getTokenPayloadFromRequest(req);
+    //     console.log('payload: ', payload);
+    //     return await this.likeService.setLike(payload.uuid, productId);
+    // }
 
     @Delete('/:likeUuid')
-    public async removeLike(@Param('likeUuid') likeUuid: string, @Req() req: Request) {
+    public async removeLike(
+        @Param('likeUuid') likeUuid: string,
+        @Req() req: Request
+    ) {
         const payload = this.getTokenPayloadFromRequest(req);
         return await this.likeService.removeLike(payload.uuid, likeUuid);
     }
