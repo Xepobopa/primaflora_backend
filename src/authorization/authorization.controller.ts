@@ -29,6 +29,7 @@ export class AuthorizationController {
 
     @Post('/sign-in')
     public async signIn(@Body() singInDto: SignInDto, @Res() res: Response) {
+        console.log('Sign in dto => ', singInDto);
         const result = await this.authorizationService.signIn(singInDto);
 
         this.setRefreshCookie(result.refreshToken, res)

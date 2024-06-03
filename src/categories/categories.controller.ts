@@ -17,7 +17,11 @@ export class CategoriesController {
         @Param('subcategoryId') subcategoryId: number,
         @Req() req: Request
     ) {
-        const token = req.headers.authorization.replace('Bearer ', '');
+        let token = null;
+        if (req.headers.authorization) {
+            token = req.headers.authorization.replace('Bearer ', '');
+        }
+
         return await this.categoriesService.findSubcategoryWithProducts(
             subcategoryId,
             token

@@ -23,13 +23,8 @@ export class CategoriesService {
 
     public async findSubcategoryWithProducts(
         subcategoryId: number,
-        token: string
+        token?: string
     ) {
-        const userPayload = await this.tokenService.verifyToken(
-            token,
-            'access'
-        );
-
         const subcategory = await this.subcategoryRepository.findOneOrFail({
             where: { id: subcategoryId },
             select: {
@@ -51,8 +46,18 @@ export class CategoriesService {
             relations: ['products', 'products.comments'],
         });
 
+        if (!token) {
+            return subcategory;
+        }
+
+        const userPayload = await this.tokenService.verifyToken(
+            token,
+            'access'
+        );
+
         return {
             ...subcategory,
+
             products: await Promise.all(
                 subcategory.products.map(async product => ({
                     ...product,

@@ -54,6 +54,7 @@ export class UserService {
                 where: { login },
             });
         } catch (error) {
+            console.log(error);
             throw new BadRequestException('User not found');
         }
     }

@@ -43,15 +43,22 @@ export class ProductsService {
     }
 
     public async getOneWithComments(uuid: string, token: string) {
-        const userPayload = await this.tokenService.verifyToken(
-            token,
-            'access'
-        );
-
         const res = await this.productRepository.findOne({
             where: { uuid },
             relations: ['comments', 'comments.user', 'category'],
         });
+
+        if (!token) {
+            return res;
+        }
+
+        let userPayload;
+        try {
+            userPayload = await this.tokenService.verifyToken(token, 'access');
+        } catch (e) {
+            console.log('[WARN] User is not authorized! Token => ', token);
+            return;
+        }
 
         return {
             ...res,

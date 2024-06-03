@@ -38,16 +38,17 @@ export class ProductsController {
 
     @Get('/getWithComments/:uuid')
     getComments(@Param('uuid') uuid: string, @Req() req: Request) {
-        const token = req.headers.authorization.replace('Bearer ', '');
+        const token = this.getTokenPayloadFromRequest(req);
+        console.log('token => ', token);
         return this.productsService.getOneWithComments(uuid, token);
     }
 
     private getTokenPayloadFromRequest(req: Request): any | null {
-        const token = req.headers.authorization.replace('Bearer ', '');
-        if (!token) {
+        if (!req.headers.authorization) {
             return null;
         }
+        return req.headers.authorization.replace('Bearer ', '');
 
-        return this.tokenService.verifyToken(token, 'access');
+        // return this.tokenService.verifyToken(token, 'access');
     }
 }
