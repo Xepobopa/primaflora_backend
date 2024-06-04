@@ -6,7 +6,10 @@ import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
-        cors: { credentials: true, origin: 'http://localhost:3000' },
+        cors: {
+            credentials: true,
+            origin: 'https://primafloraweb-production.up.railway.app',
+        },
     });
     const config = app.get<ConfigService>(ConfigService);
 
