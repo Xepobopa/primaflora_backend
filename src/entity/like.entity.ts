@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { AbstractEntity } from './abstract.entity';
 import { UserEntity } from './user.entity';
 import { ProductEntity } from './product.entity';
@@ -8,7 +8,7 @@ export class LikeEntity extends AbstractEntity {
     @ManyToOne(() => UserEntity, user => user.likes)
     public user: UserEntity;
 
-    @OneToOne(() => ProductEntity)
+    @ManyToOne(() => ProductEntity)
     @JoinColumn()
     public product: ProductEntity;
 }

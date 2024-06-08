@@ -8,7 +8,7 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
         cors: {
             credentials: true,
-            origin: 'https://primafloraweb-production.up.railway.app',
+            origin: process.env.CORS_ORIGIN,
         },
     });
     const config = app.get<ConfigService>(ConfigService);
