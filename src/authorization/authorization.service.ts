@@ -1,19 +1,20 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
     BadRequestException,
     Inject,
     Injectable,
     UnauthorizedException,
 } from '@nestjs/common';
-import { SignUpDto } from './dto/sign-up.dto';
-import { UserService } from '../user/user.service';
-import { MailerService } from '../mailer/mailer.service';
-import { SignInDto } from './dto/sign-in.dto';
-import { compare } from 'bcrypt';
-import { TokenService } from '../token/token.service';
-import { UserEntity } from '../entity/user.entity';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { isUndefined } from '@nestjs/common/utils/shared.utils';
+import { compare } from 'bcrypt';
+import { Cache } from 'cache-manager';
+import { randomBytes } from 'crypto';
+import { UserEntity } from '../entity/user.entity';
+import { MailerService } from '../mailer/mailer.service';
+import { TokenService } from '../token/token.service';
+import { UserService } from '../user/user.service';
+import { SignInDto } from './dto/sign-in.dto';
+import { SignUpDto } from './dto/sign-up.dto';
 
 @Injectable()
 export class AuthorizationService {
@@ -23,6 +24,10 @@ export class AuthorizationService {
         private readonly mailerService: MailerService,
         private readonly tokenService: TokenService
     ) {}
+
+    private generateInvitationCode() {
+        return randomBytes(16).toString('hex'); // Generates a 32-character hex string
+    }
 
     public async signUp(signUpDto: SignUpDto) {
         this.comparePasswords(signUpDto.password1, signUpDto.password2);
@@ -35,6 +40,7 @@ export class AuthorizationService {
             email: signUpDto.email,
             phone: signUpDto.phone,
             name: signUpDto.name,
+            invitationCode: this.generateInvitationCode(),
         });
 
         const code = await this.userService.createVerificationCode(
@@ -42,6 +48,35 @@ export class AuthorizationService {
         );
         console.log('Code => ', code);
         this.mailerService.sendConfirmationEmail(newUser, code.code);
+
+        return newUser;
+    }
+
+    public async signUpWithInvitationCode(
+        signUpDto: SignUpDto,
+        inviteCode: string
+    ) {
+        console.log('[INFO] Sign in with invivte code: => ', inviteCode);
+        this.comparePasswords(signUpDto.password1, signUpDto.password2);
+
+        // find user who gave his invite code
+        const inviter = await this.userService.findOneByInviteCode(inviteCode);
+
+        // create new user and attach him to inviter
+        const newUser = await this.userService.create({
+            consultation_allowed: signUpDto.consultation_allowed,
+            phone_allowed: signUpDto.phone_allowed,
+            password: signUpDto.password1,
+            login: signUpDto.login,
+            email: signUpDto.email,
+            phone: signUpDto.phone,
+            name: signUpDto.name,
+            invitationCode: this.generateInvitationCode(),
+        });
+
+        // attach new user to inviter
+        inviter.invitedUser = newUser;
+        await this.userService.save(inviter);
 
         return newUser;
     }
@@ -74,6 +109,10 @@ export class AuthorizationService {
         await this.checkIfTokenIsBlackListed(decoded.uuid, oldToken);
         const user = await this.userService.findOneById(decoded.uuid);
         return { ...this.tokenService.generateTokens({ ...user }), user };
+    }
+
+    public async verifyInviteCode(inviteCode: string) {
+        return await this.userService.findOneByInviteCode(inviteCode);
     }
 
     public async logout(refreshToken: string) {

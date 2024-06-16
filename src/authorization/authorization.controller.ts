@@ -3,7 +3,9 @@ import {
     Controller,
     Get,
     HttpStatus,
+    Param,
     Post,
+    Query,
     Req,
     Res,
     UnauthorizedException,
@@ -23,8 +25,16 @@ export class AuthorizationController {
     }
 
     @Post('/sign-up')
-    public async singUp(@Body() signUpDto: SignUpDto) {
-        return this.authorizationService.signUp(signUpDto);
+    public async singUp(
+        @Body() signUpDto: SignUpDto,
+        @Query('inviteCode') inviteCode?: string
+    ) {
+        if (!inviteCode) return this.authorizationService.signUp(signUpDto);
+
+        return this.authorizationService.signUpWithInvitationCode(
+            signUpDto,
+            inviteCode
+        );
     }
 
     @Post('/sign-in')
@@ -41,6 +51,11 @@ export class AuthorizationController {
             });
 
         console.log({ access: result.accessToken });
+    }
+
+    @Get('/verifyInviteCode/:inviteCode')
+    public async verifyInviteCode(@Param('inviteCode') inviteCode: string) {
+        return this.authorizationService.verifyInviteCode(inviteCode);
     }
 
     @Get('/refreshToken')

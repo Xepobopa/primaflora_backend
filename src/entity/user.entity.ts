@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
 import { AbstractEntity } from './abstract.entity';
 import { CartEntity } from './cart.entity';
 import { LikeEntity } from './like.entity';
@@ -23,8 +23,21 @@ export class UserEntity extends AbstractEntity {
     @Column('varchar')
     public password: string;
 
+    @Column()
+    public invitationCode: string;
+
     @Column('boolean', { nullable: true })
     public phone_allowed: boolean;
+
+    @OneToOne(() => UserEntity, user => user.invitedBy, {
+        nullable: true,
+        cascade: ['insert', 'update'],
+    })
+    @JoinColumn() // This should be on the side that owns the relationship
+    public invitedUser?: UserEntity;
+
+    @OneToOne(() => UserEntity, user => user.invitedUser)
+    public invitedBy?: UserEntity;
 
     @Column('boolean', { nullable: true })
     public consultation_allowed: boolean;

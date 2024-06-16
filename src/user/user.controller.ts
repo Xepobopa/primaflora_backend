@@ -5,6 +5,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     Req,
     UseGuards,
 } from '@nestjs/common';
@@ -22,16 +23,24 @@ export class UserController {
 
     @Get()
     @UseGuards(AuthGuard)
-    public async getUserByToken(@Req() req: Request) {
+    public async getUserByToken(
+        @Req() req: Request,
+        @Query('loadInvitedUser') loadInvitedUser?: boolean
+    ) {
         console.log('Get user by token...');
         const token = this.getTokenFromRequest(req);
-        return await this.userService.findOneByToken(token);
+        return await this.userService.findOneByToken(token, loadInvitedUser);
     }
 
     @Get('/:uuid')
     @UseGuards(AuthGuard)
-    public async getUserById(@Param('uuid') uuid: string) {
-        return await this.userService.findOneById(uuid);
+    public async getUserById(
+        @Param('uuid') uuid: string,
+        @Query('loadInvitedUser') loadInvitedUser?: boolean
+    ) {
+        if (!loadInvitedUser) return await this.userService.findOneById(uuid);
+
+        return await this.userService.findOneByIdAndLoadInvitedUser(uuid);
     }
 
     @Patch()

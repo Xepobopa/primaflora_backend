@@ -29,16 +29,32 @@ export class UserService {
             is_activated: false,
             password: await hash(newUser.password, 10),
             cart: [],
+            invitationCode: newUser.invitationCode,
         });
     }
 
-    public async findOneByToken(token: string) {
+    public async save(user: UserEntity) {
+        return await this.userRepository.save(user);
+    }
+
+    public async findOneByToken(token: string, loadInvitedUser?: boolean) {
         const payload = this.tokenService.verifyToken(token, 'access');
-        return await this.findOneById(payload.uuid);
+
+        if (!loadInvitedUser) return await this.findOneById(payload.uuid);
+
+        return await this.findOneByIdAndLoadInvitedUser(payload.uuid);
     }
 
     public async findOneById(uuid: string) {
         return await this.userRepository.findOneOrFail({ where: { uuid } });
+    }
+
+    public async findOneByIdAndLoadInvitedUser(uuid: string) {
+        console.log('uuid: ', uuid);
+        return await this.userRepository.findOneOrFail({
+            where: { uuid },
+            relations: ['invitedUser'],
+        });
     }
 
     public async findOneByIdWithLikes(uuid: string) {
@@ -56,6 +72,19 @@ export class UserService {
         } catch (error) {
             console.log(error);
             throw new BadRequestException('User not found');
+        }
+    }
+
+    public async findOneByInviteCode(invitationCode: string) {
+        try {
+            return await this.userRepository.findOneOrFail({
+                where: { invitationCode },
+            });
+        } catch (error) {
+            console.log(error);
+            throw new BadRequestException(
+                `User not found by invitation code: ${invitationCode}`
+            );
         }
     }
 
