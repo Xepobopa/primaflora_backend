@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Req } from '@nestjs/common';
-import { CategoriesService } from './categories.service';
+import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
+import { CategoriesService } from './categories.service';
+import { SubcategoryDto } from './dto/subcategory.dto';
 
 @Controller('categories')
 export class CategoriesController {
@@ -26,5 +27,10 @@ export class CategoriesController {
             subcategoryId,
             token
         );
+    }
+
+    @Post('/subcategory/create')
+    public async createSubategory(@Body() subcategoryDto: SubcategoryDto) {
+        return await this.categoriesService.createSubcategory(subcategoryDto);
     }
 }

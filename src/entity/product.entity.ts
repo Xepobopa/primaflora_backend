@@ -2,17 +2,15 @@ import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { AbstractEntity } from './abstract.entity';
 import { SubcategoryEntity } from './subcategory.entity';
 import { CommentEntity } from './comment.entity';
+import { ProductTranslateEntity } from './product_t.entity';
 
 @Entity('product')
 export class ProductEntity extends AbstractEntity {
     @Column('varchar')
     public photo_url: string;
 
-    @Column('varchar')
-    public title: string;
-
-    @Column('simple-json')
-    public desc: string;
+    @OneToMany(() => ProductTranslateEntity, translate => translate.product)
+    public translate: ProductTranslateEntity[];
 
     @Column('int')
     public price_currency: number;

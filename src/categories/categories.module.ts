@@ -6,11 +6,15 @@ import { CategoryEntity } from '../entity/category.entity';
 import { SubcategoryEntity } from 'src/entity/subcategory.entity';
 import { LikeModule } from 'src/like/like.module';
 import { TokenModule } from 'src/token/token.module';
+import { SubcategoryTranslateEntity } from 'src/entity/subcategory_t.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([CategoryEntity]),
-        TypeOrmModule.forFeature([SubcategoryEntity]),
+        TypeOrmModule.forFeature([
+            CategoryEntity,
+            SubcategoryEntity,
+            SubcategoryTranslateEntity,
+        ]),
         LikeModule,
         TokenModule,
     ],

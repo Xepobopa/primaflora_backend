@@ -5,9 +5,19 @@ export class SubcategoryDto extends AbstractDto {
     @IsUrl()
     image: string;
 
-    @IsString()
-    desc: string;
+    translate: SubcategoryTranslate[];
 
     @IsString()
     parent_uid: string;
+}
+
+class SubcategoryTranslate {
+    @IsString()
+    language: 'ukr' | 'rus';
+
+    @IsString()
+    name: string;
+
+    @IsString()
+    desc: string;
 }
