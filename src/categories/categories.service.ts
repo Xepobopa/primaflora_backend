@@ -33,17 +33,26 @@ export class CategoriesService {
 
         const translations = [];
         for (const translation of subcategory.translate) {
-            const newTranslate =
-                await this.subcategoryTranslateRepository.create({
+            const newTranslate = await this.subcategoryTranslateRepository.save(
+                {
                     name: translation.name,
                     desc: translation.desc,
                     language: translation.language,
-                });
+                }
+            );
+            console.log('new translate => ', newTranslate);
             translations.push(newTranslate);
         }
 
         newSubcategory.translate = translations;
         return await this.subcategoryRepository.save(newSubcategory);
+    }
+
+    public async getSubcategory(uuid: string) {
+        return await this.subcategoryRepository.findOneOrFail({
+            where: { uuid },
+            relations: ['translate'],
+        });
     }
 
     public async findAllWithSub() {
