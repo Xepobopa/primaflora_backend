@@ -55,8 +55,35 @@ export class CategoriesService {
         });
     }
 
-    public async findAllWithSub() {
-        return await this.categoryRepository.find({ relations: ['childrens'] });
+    public async findAllWithSub(language: string = 'ukr') {
+        // return await this.categoryRepository.find({ relations: ['childrens'] });
+        const categories = await await this.categoryRepository
+            .createQueryBuilder('category')
+            .leftJoinAndSelect('category.childrens', 'subcategory')
+            .leftJoinAndSelect('subcategory.translate', 'subcategoryTranslate')
+            .where('subcategoryTranslate.language = :language', { language })
+            .getMany();
+
+        const transformCategories = categories.map(category => {
+            return {
+                id: category.id,
+                uuid: category.uuid,
+                name:
+                    language === 'ukr' ? category.name_ukr : category.name_rus,
+                childrens: category.childrens.map(subcategory => {
+                    return {
+                        id: subcategory.id,
+                        uuid: subcategory.uuid,
+                        image: subcategory.image,
+                        name: subcategory.translate[0].name,
+                        desc: subcategory.translate[0].desc,
+                        language: subcategory.translate[0].language,
+                    };
+                }),
+            };
+        });
+
+        return transformCategories;
     }
 
     public async findSubcategoryWithProducts(
