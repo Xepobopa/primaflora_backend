@@ -11,6 +11,7 @@ import { ProductsModule } from './products/products.module';
 import { CategoriesModule } from './categories/categories.module';
 import { CartModule } from './cart/cart.module';
 import { LikeModule } from './like/like.module';
+import { AppController } from './app.controller';
 
 @Module({
     imports: [
@@ -33,5 +34,6 @@ import { LikeModule } from './like/like.module';
         CartModule,
         LikeModule,
     ],
+    controllers: [AppController],
 })
 export class AppModule {}
