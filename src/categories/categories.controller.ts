@@ -29,17 +29,20 @@ export class CategoriesController {
 
     // return subcategories with products. Products have minimal fields to be shown (not description and comments)
     @Get('/findSubcategoryWithProducts/:subcategoryId')
+    @UsePipes(new ValidateLanguagePipe())
     public async findSubcategoryWithProducts(
         @Param('subcategoryId') subcategoryId: number,
-        @Req() req: Request
+        @Req() req: Request,
+        @AcceptLanguage() language: string
     ) {
         let token = null;
         if (req.headers.authorization) {
-            token = req.headers.authorization.replace('Bearer ', '');
+            token = req.headers.authorization.split(' ')[1].trim();
         }
 
         return await this.categoriesService.findSubcategoryWithProducts(
             subcategoryId,
+            language,
             token
         );
     }

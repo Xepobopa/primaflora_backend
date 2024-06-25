@@ -55,6 +55,12 @@ export class CategoriesService {
         });
     }
 
+    public async findSubcategoryById(id: number) {
+        return await this.subcategoryRepository.findOneOrFail({
+            where: { id },
+        });
+    }
+
     public async findAllWithSub(language: string = 'ukr') {
         // return await this.categoryRepository.find({ relations: ['childrens'] });
         const categories = await await this.categoryRepository
@@ -88,29 +94,26 @@ export class CategoriesService {
 
     public async findSubcategoryWithProducts(
         subcategoryId: number,
+        language: string,
         token?: string
     ) {
-        const subcategory = await this.subcategoryRepository.findOneOrFail({
-            where: { id: subcategoryId },
-            // select: {
-            //     id: true,
-            //     uuid: true,
-            //     desc: true,
-            //     image: true,
-            //     name: true,
-            //     products: {
-            //         id: true,
-            //         uuid: true,
-            //         percent_discount: true,
-            //         price_currency: true,
-            //         photo_url: true,
-            //         rating: true,
-            //         // title: true,
-            //     },
-            // },
-            relations: ['products', 'products.comments'],
-        });
+        // const subcategory = await this.subcategoryRepository.findOneOrFail({
+        //     where: { id: subcategoryId },
+        //     relations: ['products', 'products.comments'],
+        // });
 
+        const subcategory = await this.subcategoryRepository
+            .createQueryBuilder('subcategory')
+            .leftJoinAndSelect('subcategory.products', 'product')
+            .leftJoinAndSelect('product.comments', 'comment')
+            .leftJoinAndSelect('subcategory.translate', 'subcategoryTranslate')
+            .leftJoinAndSelect('product.translate', 'productTranslate')
+            .where('subcategory.id = :subcategoryId', { subcategoryId })
+            .andWhere('productTranslate.language = :language', { language })
+            .andWhere('subcategoryTranslate.language = :language', { language })
+            .getOne();
+
+        // TODO: return confort data
         if (!token) {
             return subcategory;
         }

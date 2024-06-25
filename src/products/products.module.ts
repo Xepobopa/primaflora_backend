@@ -6,11 +6,17 @@ import { ProductEntity } from '../entity/product.entity';
 import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
 import { LikeModule } from 'src/like/like.module';
+import { CategoriesModule } from 'src/categories/categories.module';
+import { ProductTranslateEntity } from 'src/entity/product_t.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([ProductEntity]),
-        TypeOrmModule.forFeature([CommentEntity]),
+        TypeOrmModule.forFeature([
+            ProductEntity,
+            ProductTranslateEntity,
+            CommentEntity,
+        ]),
+        CategoriesModule,
         TokenModule,
         LikeModule,
     ],

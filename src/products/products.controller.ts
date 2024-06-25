@@ -3,6 +3,7 @@ import { Request } from 'express';
 import { CreateCommentDto } from './dto/create-comment';
 import { ProductsService } from './products.service';
 import { TokenService } from 'src/token/token.service';
+import { CreateProductDto } from './dto/create-product.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -11,10 +12,10 @@ export class ProductsController {
         private readonly tokenService: TokenService
     ) {}
 
-    // @Post('/create')
-    // create(@Body() createProductDto: CreateProductDto) {
-    //     return this.productsService.create(createProductDto);
-    // }
+    @Post('/create')
+    createProduct(@Body() createProductDto: CreateProductDto) {
+        return this.productsService.create(createProductDto);
+    }
 
     @Post('/createComment/:productUid')
     create(

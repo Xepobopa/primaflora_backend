@@ -6,6 +6,9 @@ import { LikeService } from 'src/like/like.service';
 import { Repository } from 'typeorm';
 import { ProductEntity } from '../entity/product.entity';
 import { CreateCommentDto } from './dto/create-comment';
+import { CategoriesService } from 'src/categories/categories.service';
+import { CreateProductDto } from './dto/create-product.dto';
+import { ProductTranslateEntity } from 'src/entity/product_t.entity';
 
 @Injectable()
 export class ProductsService {
@@ -13,12 +16,17 @@ export class ProductsService {
         @InjectRepository(ProductEntity)
         private productRepository: Repository<ProductEntity>,
 
+        @InjectRepository(ProductTranslateEntity)
+        private productTranslateRepository: Repository<ProductTranslateEntity>,
+
         @InjectRepository(CommentEntity)
         private commentRepository: Repository<CommentEntity>,
 
         private readonly likeService: LikeService,
 
-        private readonly tokenService: TokenService
+        private readonly tokenService: TokenService,
+
+        private readonly categoryService: CategoriesService
     ) {}
 
     public async createComment(
@@ -89,14 +97,29 @@ export class ProductsService {
         return await this.likeService.setLike(userPayload.uuid, product);
     }
 
-    // public async create(createProductDto: CreateProductDto) {
-    //     const category = await this.categoryService.findOneById(
-    //         createProductDto.categoryId
-    //     );
+    public async create(createProductDto: CreateProductDto) {
+        const category = await this.categoryService.findSubcategoryById(
+            createProductDto.categoryId
+        );
 
-    //     return this.productRepository.save({ ...createProductDto, category });
+        const newProduct = await this.productRepository.create({
+            ...createProductDto,
+            category: category,
+        });
 
-    // }
+        const translations = [];
+        for (const translation of createProductDto.translate) {
+            const newTranslate = await this.productTranslateRepository.save({
+                title: translation.title,
+                desc: translation.desc,
+                language: translation.language,
+            });
+            translations.push(newTranslate);
+        }
+
+        newProduct.translate = translations;
+        return await this.productRepository.save(newProduct);
+    }
 
     // public async findAllByQuery(query: ProductQueryDto) {
     //     const queryBuilder = this.productRepository.createQueryBuilder();
