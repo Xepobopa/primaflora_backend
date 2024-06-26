@@ -8,7 +8,7 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
         cors: {
             credentials: true,
-            origin: process.env.CORS_ORIGIN,
+            origin: ['http://localhost:3000', 'https://primaflora.store'] //process.env.CORS_ORIGIN,
         },
     });
     const config = app.get<ConfigService>(ConfigService);
