@@ -7,6 +7,7 @@ import { LikeService } from 'src/like/like.service';
 import { TokenService } from 'src/token/token.service';
 import { SubcategoryDto } from './dto/subcategory.dto';
 import { SubcategoryTranslateEntity } from 'src/entity/subcategory_t.entity';
+import { ProductDto } from 'src/products/dto/product.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -97,25 +98,44 @@ export class CategoriesService {
         language: string,
         token?: string
     ) {
-        // const subcategory = await this.subcategoryRepository.findOneOrFail({
-        //     where: { id: subcategoryId },
-        //     relations: ['products', 'products.comments'],
-        // });
-
         const subcategory = await this.subcategoryRepository
             .createQueryBuilder('subcategory')
             .leftJoinAndSelect('subcategory.products', 'product')
             .leftJoinAndSelect('product.comments', 'comment')
             .leftJoinAndSelect('subcategory.translate', 'subcategoryTranslate')
-            .leftJoinAndSelect('product.translate', 'productTranslate')
+            .leftJoin('product.translate', 'product_t')
+            .addSelect(["product_t.title", "product_t.language", "product_t.shortDesc"])
             .where('subcategory.id = :subcategoryId', { subcategoryId })
-            .andWhere('productTranslate.language = :language', { language })
+            .andWhere('product_t.language = :language', { language })
             .andWhere('subcategoryTranslate.language = :language', { language })
             .getOne();
 
-        // TODO: return confort data
+        console.log("response => ", subcategory);
+
+        if (!subcategory?.products) {
+            return {
+                ...subcategory,
+                products: []
+            };
+        }
+
+        // return data without likes
         if (!token) {
-            return subcategory;
+            return {
+                ...subcategory,
+    
+                products: subcategory.products.map(product => {
+                    const { translate, ...other } = product;
+
+                    return {
+                        ...other,
+                        title: translate[0].title,
+                        shortDesc: translate[0].shortDesc,
+                        language: translate[0].language,
+                        comments: product.comments.length,
+                    }
+                })
+            };
         }
 
         const userPayload = await this.tokenService.verifyToken(
@@ -123,18 +143,27 @@ export class CategoriesService {
             'access'
         );
 
+
+        // if user is defined, mark what products he liked
         return {
             ...subcategory,
 
             products: await Promise.all(
-                subcategory.products.map(async product => ({
-                    ...product,
-                    comments: product.comments.length,
-                    like: await this.likeService.findOne(
-                        userPayload.id,
-                        product.id
-                    ),
-                }))
+                subcategory.products.map(async product => {
+                    const { translate, ...other } = product;
+
+                    return {
+                        ...other,
+                        title: product.translate[0].title,
+                        shortDesc: product.translate[0].shortDesc,
+                        language: product.translate[0].language,
+                        comments: product.comments.length,
+                        like: await this.likeService.findOne(
+                            userPayload.id,
+                            product.id
+                        ),
+                    }
+                })
             ),
         };
     }

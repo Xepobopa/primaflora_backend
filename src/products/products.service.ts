@@ -109,11 +109,7 @@ export class ProductsService {
 
         const translations = [];
         for (const translation of createProductDto.translate) {
-            const newTranslate = await this.productTranslateRepository.save({
-                title: translation.title,
-                desc: translation.desc,
-                language: translation.language,
-            });
+            const newTranslate = await this.productTranslateRepository.save(translation);
             translations.push(newTranslate);
         }
 

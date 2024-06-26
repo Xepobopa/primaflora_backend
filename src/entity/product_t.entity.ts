@@ -14,5 +14,8 @@ export class ProductTranslateEntity extends AbstractEntity {
     public desc: string;
 
     @Column()
+    public shortDesc: string;
+
+    @Column()
     public language: string;
 }

@@ -36,5 +36,8 @@ export class ProductTranslateDto {
     public desc: string;
 
     @IsString()
+    public shortDesc: string;
+
+    @IsString()
     public language: string;
 }

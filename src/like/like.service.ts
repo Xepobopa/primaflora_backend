@@ -38,13 +38,34 @@ export class LikeService {
         }
     }
 
-    public async getLikedProducts(userUuid: string) {
-        return await this.likeRepository
+    public async getLikedProducts(userUuid: string, language: string) {
+        const res = await this.likeRepository
             .createQueryBuilder('like')
             .leftJoin('like.user', 'user')
             .leftJoinAndSelect('like.product', 'product')
+            .leftJoin('product.translate', 'product_t')
+            .addSelect(["product_t.title", "product_t.language", "product_t.shortDesc"])
             .where('user.uuid = :userUuid', { userUuid })
+            .andWhere('product_t.language = :language', { language })
             .getMany(); //.map(like => like.product)
+
+        if (res.length === 0) {
+            return [];
+        }
+
+        return res.map(like => {
+            const { translate, ...other } = like.product;
+            
+            return {
+                ...like,
+                product: {
+                    ...other,
+                    title: translate[0].title,
+                    shortDesc: translate[0].shortDesc,
+                    language: translate[0].language,
+                }
+            };
+        })
     }
 
     public async findOne(userId: number, productId: number) {

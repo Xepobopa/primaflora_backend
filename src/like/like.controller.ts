@@ -1,8 +1,10 @@
-import { Controller, Delete, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Req, UseGuards, UsePipes } from '@nestjs/common';
 import { LikeService } from './like.service';
 import { AuthGuard } from '../authorization/guards/auth.guard';
 import { Request } from 'express';
 import { TokenService } from '../token/token.service';
+import { ValidateLanguagePipe } from 'src/common/pipes/accept-language.pipe';
+import { AcceptLanguage } from 'src/common/decorators/accept-language.decorator';
 
 @Controller('like')
 @UseGuards(AuthGuard)
@@ -13,9 +15,10 @@ export class LikeController {
     ) {}
 
     @Get('/likes')
-    public async getLikedProducts(@Req() req: Request) {
+    @UsePipes(new ValidateLanguagePipe())
+    public async getLikedProducts(@Req() req: Request, @AcceptLanguage() language: string) {
         const payload = this.getTokenPayloadFromRequest(req);
-        return await this.likeService.getLikedProducts(payload.uuid);
+        return await this.likeService.getLikedProducts(payload.uuid, language);
     }
 
     // now like product in /product route

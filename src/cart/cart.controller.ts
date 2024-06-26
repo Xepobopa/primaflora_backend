@@ -6,11 +6,14 @@ import {
     Param,
     Post,
     Req,
+    UsePipes,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { TokenService } from '../token/token.service';
 import { CartService } from './cart.service';
 import { CreateCartDto } from './dto/create-cart.dto';
+import { ValidateLanguagePipe } from 'src/common/pipes/accept-language.pipe';
+import { AcceptLanguage } from 'src/common/decorators/accept-language.decorator';
 
 @Controller('cart')
 export class CartController {
@@ -25,10 +28,11 @@ export class CartController {
     }
 
     @Get('/getAll')
-    findAll(@Req() req: Request) {
+    @UsePipes(new ValidateLanguagePipe())
+    findAll(@Req() req: Request, @AcceptLanguage() language: string) {
         const token = req.headers.authorization.replace('Bearer ', '');
         const userFromToken = this.tokenService.verifyToken(token, 'access');
-        return this.cartService.findAll(userFromToken.uuid);
+        return this.cartService.findAll(userFromToken.uuid, language);
     }
 
     // @Patch('/:cartItemUuid')
