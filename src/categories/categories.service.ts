@@ -127,6 +127,7 @@ export class CategoriesService {
                 products: subcategory.products.map(product => {
                     const { translate, ...other } = product;
 
+                    console.log(`${translate[0].title} => `, product)
                     return {
                         ...other,
                         title: translate[0].title,

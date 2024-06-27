@@ -11,7 +11,8 @@ export class CartEntity extends AbstractEntity {
     @Column()
     public quantity: number;
 
-    @OneToOne(() => ProductEntity)
-    @JoinColumn()
+    @ManyToOne(() => ProductEntity, product => product.carts)
+    // @OneToOne(() => ProductEntity)
+    // @JoinColumn()
     public product: ProductEntity;
 }

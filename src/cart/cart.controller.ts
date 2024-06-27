@@ -23,8 +23,10 @@ export class CartController {
     ) {}
 
     @Post()
-    create(@Body() newCart: CreateCartDto) {
-        return this.cartService.create(newCart);
+    create(@Body() newCart: CreateCartDto, @Req() req: Request) {
+        const token = req.headers.authorization.replace('Bearer ', '');
+        const userFromToken = this.tokenService.verifyToken(token, 'access');
+        return this.cartService.create(newCart, userFromToken.uuid);
     }
 
     @Get('/getAll')

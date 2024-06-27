@@ -3,6 +3,7 @@ import { AbstractEntity } from './abstract.entity';
 import { SubcategoryEntity } from './subcategory.entity';
 import { CommentEntity } from './comment.entity';
 import { ProductTranslateEntity } from './product_t.entity';
+import { CartEntity } from './cart.entity';
 
 @Entity('product')
 export class ProductEntity extends AbstractEntity {
@@ -29,4 +30,7 @@ export class ProductEntity extends AbstractEntity {
 
     @OneToMany(() => CommentEntity, comment => comment.product)
     public comments: CommentEntity[];
+
+    @OneToMany(() => CartEntity, cart => cart.product)
+    public carts: CartEntity[];
 }

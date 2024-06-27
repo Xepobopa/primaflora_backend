@@ -15,12 +15,35 @@ export class CartService {
         private readonly productService: ProductsService
     ) {}
 
-    async create(newCart: CreateCartDto) {
-        const user = await this.userService.findOneById(newCart.userUId);
-        const product = await this.productService.findOneByUid(
-            newCart.productUId
-        );
-        return this.cartRepository.save({ ...newCart, user, product });
+    async create(newCart: CreateCartDto, userUid: string) {
+        // NEW
+        const user = await this.userService.findOneById(userUid);
+        const product = await this.productService.findOneByUid(newCart.productUId);
+
+        // Check if the cart item already exists for the user and product
+        const existingCartItem = await this.cartRepository
+            .createQueryBuilder('cart')
+            .where('cart.userId = :userId', { userId: user.id })
+            .andWhere('cart.productId = :productId', { productId: product.id })
+            .getOne();
+
+        console.log('ExistingCartItem => ', existingCartItem);
+
+        if (existingCartItem) {
+            // Update the quantity if the cart item exists
+            existingCartItem.quantity += newCart.quantity;
+            return this.cartRepository.save(existingCartItem);
+        } else {
+            // Create a new cart item if it does not exist
+            return this.cartRepository.save({ ...newCart, user, product });
+        }
+
+        // OLD
+        // const user = await this.userService.findOneById(userUid);
+        // const product = await this.productService.findOneByUid(
+        //     newCart.productUId
+        // );
+        // return this.cartRepository.save({ ...newCart, user, product });
     }
 
     async findAll(userId: string, language: string) {

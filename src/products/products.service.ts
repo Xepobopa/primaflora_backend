@@ -32,7 +32,7 @@ export class ProductsService {
     public async createComment(
         newComment: CreateCommentDto,
         token: string,
-        productId
+        productId: number
     ) {
         const userPayload = await this.tokenService.verifyToken(
             token,
@@ -50,14 +50,33 @@ export class ProductsService {
         });
     }
 
-    public async getOneWithComments(uuid: string, token: string) {
-        const res = await this.productRepository.findOne({
-            where: { uuid },
-            relations: ['comments', 'comments.user', 'category'],
-        });
+    public async getOneWithComments(uuid: string, token: string, language: string) {
+        // const res = await this.productRepository.findOne({
+        //     where: { uuid },
+        //     relations: ['comments', 'comments.user', 'category'],
+        // });
+        const res = await this.productRepository
+            .createQueryBuilder('product')
+            .leftJoinAndSelect('product.comments', 'comments')
+            .leftJoinAndSelect('comments.user', 'commentUser')
+            .leftJoinAndSelect('product.category', 'category')
+            .leftJoin('product.translate', 'product_t')
+            .addSelect(['product_t.title', 'product_t.language', 'product_t.shortDesc', 'product_t.desc'])
+            .where('product.uuid = :productUid', { productUid: uuid })
+            .andWhere('product_t.language = :language', { language })
+            .getOne()
+ 
+        const { translate, ...other } = res;
+        const updatedRes = {
+            ...other,
+            title: translate[0].title,
+            desc: translate[0].desc,
+            shortDesc: translate[0].shortDesc,
+            language: translate[0].language,
+        }
 
         if (!token) {
-            return res;
+            return updatedRes;
         }
 
         let userPayload;
@@ -69,7 +88,7 @@ export class ProductsService {
         }
 
         return {
-            ...res,
+            ...updatedRes,
             like: await this.likeService.findOne(userPayload.id, res.id),
         };
     }
