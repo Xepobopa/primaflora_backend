@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { AbstractEntity } from './abstract.entity';
 import { UserEntity } from './user.entity';
 import { ProductEntity } from './product.entity';
@@ -9,6 +9,7 @@ export class CommentEntity extends AbstractEntity {
     user: UserEntity;
 
     @ManyToOne(() => ProductEntity, product => product.comments)
+    @JoinColumn({ name: 'product_id' })
     product: ProductEntity;
 
     @Column()

@@ -7,6 +7,7 @@ import { UserEntity } from '../entity/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { TokenService } from 'src/token/token.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { RoleEntity } from 'src/entity/role.entity';
 
 @Injectable()
 export class UserService {
@@ -18,7 +19,7 @@ export class UserService {
         private tokenService: TokenService
     ) {}
 
-    public async create(newUser: CreateUserDto) {
+    public async create(newUser: CreateUserDto, role: RoleEntity) {
         return await this.userRepository.save({
             login: newUser.login,
             name: newUser.name,
@@ -30,6 +31,7 @@ export class UserService {
             password: await hash(newUser.password, 10),
             cart: [],
             invitationCode: newUser.invitationCode,
+            role,
         });
     }
 
@@ -40,20 +42,23 @@ export class UserService {
     public async findOneByToken(token: string, loadInvitedUser?: boolean) {
         const payload = this.tokenService.verifyToken(token, 'access');
 
-        if (!loadInvitedUser) return await this.findOneById(payload.uuid);
+        if (!loadInvitedUser) return await this.findOneById(payload.uuid, true);
 
         return await this.findOneByIdAndLoadInvitedUser(payload.uuid);
     }
 
-    public async findOneById(uuid: string) {
-        return await this.userRepository.findOneOrFail({ where: { uuid } });
+    public async findOneById(uuid: string, getRole: boolean = false) {
+        if (getRole)    
+            return await this.userRepository.findOneOrFail({ where: { uuid }, relations: [ 'role' ] });
+        else
+            return await this.userRepository.findOneOrFail({ where: { uuid } });
     }
 
     public async findOneByIdAndLoadInvitedUser(uuid: string) {
         console.log('uuid: ', uuid);
         return await this.userRepository.findOneOrFail({
             where: { uuid },
-            relations: ['invitedUser'],
+            relations: ['invitedUser', 'role'],
         });
     }
 
@@ -68,6 +73,7 @@ export class UserService {
         try {
             return await this.userRepository.findOneOrFail({
                 where: { login },
+                relations: [ 'role' ]
             });
         } catch (error) {
             console.log(error);

@@ -9,6 +9,6 @@ export class LikeEntity extends AbstractEntity {
     public user: UserEntity;
 
     @ManyToOne(() => ProductEntity)
-    @JoinColumn()
+    @JoinColumn({ name: 'product_id' })
     public product: ProductEntity;
 }

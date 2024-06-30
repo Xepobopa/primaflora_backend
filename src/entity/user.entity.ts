@@ -1,7 +1,8 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { AbstractEntity } from './abstract.entity';
 import { CartEntity } from './cart.entity';
 import { LikeEntity } from './like.entity';
+import { RoleEntity } from './role.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity extends AbstractEntity {
@@ -47,4 +48,8 @@ export class UserEntity extends AbstractEntity {
 
     @OneToMany(() => LikeEntity, like => like.user)
     public likes: LikeEntity[];
+
+    @ManyToOne(() => RoleEntity)
+    @JoinColumn({ name: 'role_id' })
+    public role: RoleEntity;
 }

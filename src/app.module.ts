@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as Joi from 'joi';
@@ -12,7 +12,12 @@ import { CategoriesModule } from './categories/categories.module';
 import { CartModule } from './cart/cart.module';
 import { LikeModule } from './like/like.module';
 import { AppController } from './app.controller';
+import { RolesGuard } from './common/guards/roles.guard';
+import { APP_GUARD } from '@nestjs/core';
+import { TokenService } from './token/token.service';
+import { RoleModule } from './role/role.module';
 
+@Global()
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -33,6 +38,7 @@ import { AppController } from './app.controller';
         UserModule,
         CartModule,
         LikeModule,
+        RoleModule,
     ],
     controllers: [AppController],
 })

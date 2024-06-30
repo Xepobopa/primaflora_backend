@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentEntity } from 'src/entity/comment.entity';
 import { TokenService } from 'src/token/token.service';
@@ -9,6 +9,7 @@ import { CreateCommentDto } from './dto/create-comment';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductTranslateEntity } from 'src/entity/product_t.entity';
+import { CartService } from 'src/cart/cart.service';
 
 @Injectable()
 export class ProductsService {
@@ -26,7 +27,10 @@ export class ProductsService {
 
         private readonly tokenService: TokenService,
 
-        private readonly categoryService: CategoriesService
+        private readonly categoryService: CategoriesService,
+
+        @Inject(forwardRef(() => CartService))
+        private readonly cartService: CartService,
     ) {}
 
     public async createComment(
@@ -134,6 +138,40 @@ export class ProductsService {
 
         newProduct.translate = translations;
         return await this.productRepository.save(newProduct);
+    }
+
+
+    async delete(uuid: string) {
+        const product = await this.productRepository.findOneByOrFail({ uuid });
+
+        // delete all relations
+        // translation
+        await this.deleteTranslationsByProduct(product.id);
+        // likes
+        await this.likeService.deleteLikesByProduct(product.id);
+        // cart
+        await this.cartService.deleteByProductId(product.id);
+        // comments
+        await this.deleteCommentsByProduct(product.id);
+
+        return await this.productRepository.remove(product);
+    }
+
+    async deleteTranslationsByProduct(productId: number) {
+        return await this.productTranslateRepository
+            .createQueryBuilder('product_t')
+            .delete()
+            .from(ProductTranslateEntity)
+            .where('product_t."product_id" = :productId', { productId })
+            .execute()
+    }
+
+    async deleteCommentsByProduct(productId: number) {
+        return await this.commentRepository
+            .createQueryBuilder('comment')
+            .delete()
+            .from(CommentEntity)
+            .where('comment."product_id" = :productId', { productId })
     }
 
     // public async findAllByQuery(query: ProductQueryDto) {

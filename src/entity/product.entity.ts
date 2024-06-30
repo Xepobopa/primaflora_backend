@@ -10,7 +10,7 @@ export class ProductEntity extends AbstractEntity {
     @Column('varchar')
     public photo_url: string;
 
-    @OneToMany(() => ProductTranslateEntity, translate => translate.product)
+    @OneToMany(() => ProductTranslateEntity, translate => translate.product, { onDelete: 'CASCADE' })
     public translate: ProductTranslateEntity[];
 
     @Column('int')
@@ -28,9 +28,9 @@ export class ProductEntity extends AbstractEntity {
     @ManyToOne(() => SubcategoryEntity, subcategory => subcategory.products)
     public category: SubcategoryEntity;
 
-    @OneToMany(() => CommentEntity, comment => comment.product)
+    @OneToMany(() => CommentEntity, comment => comment.product, { onDelete: 'CASCADE' })
     public comments: CommentEntity[];
 
-    @OneToMany(() => CartEntity, cart => cart.product)
+    @OneToMany(() => CartEntity, cart => cart.product, { onDelete: 'CASCADE' })
     public carts: CartEntity[];
 }

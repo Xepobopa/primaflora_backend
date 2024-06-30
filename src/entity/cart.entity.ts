@@ -1,5 +1,5 @@
 import { AbstractEntity } from './abstract.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { ProductEntity } from './product.entity';
 
@@ -12,7 +12,6 @@ export class CartEntity extends AbstractEntity {
     public quantity: number;
 
     @ManyToOne(() => ProductEntity, product => product.carts)
-    // @OneToOne(() => ProductEntity)
-    // @JoinColumn()
+    @JoinColumn({ name: 'product_id' })
     public product: ProductEntity;
 }

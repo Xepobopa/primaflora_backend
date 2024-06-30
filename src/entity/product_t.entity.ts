@@ -1,10 +1,11 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { AbstractEntity } from './abstract.entity';
 import { ProductEntity } from './product.entity';
 
 @Entity('product_t')
 export class ProductTranslateEntity extends AbstractEntity {
     @ManyToOne(() => ProductEntity, product => product.translate)
+    @JoinColumn({ name: 'product_id' })
     public product: ProductEntity;
 
     @Column('varchar')

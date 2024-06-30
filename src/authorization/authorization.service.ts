@@ -15,6 +15,8 @@ import { TokenService } from '../token/token.service';
 import { UserService } from '../user/user.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignUpDto } from './dto/sign-up.dto';
+import { RoleService } from 'src/role/role.service';
+import { EUserRole } from 'src/enum/role.enum';
 
 @Injectable()
 export class AuthorizationService {
@@ -22,7 +24,8 @@ export class AuthorizationService {
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly userService: UserService,
         private readonly mailerService: MailerService,
-        private readonly tokenService: TokenService
+        private readonly tokenService: TokenService,
+        private readonly roleService: RoleService,
     ) {}
 
     private generateInvitationCode() {
@@ -31,6 +34,8 @@ export class AuthorizationService {
 
     public async signUp(signUpDto: SignUpDto) {
         this.comparePasswords(signUpDto.password1, signUpDto.password2);
+
+        const role = await this.roleService.findOne(EUserRole.USER);
 
         const newUser = await this.userService.create({
             consultation_allowed: signUpDto.consultation_allowed,
@@ -41,7 +46,7 @@ export class AuthorizationService {
             phone: signUpDto.phone,
             name: signUpDto.name,
             invitationCode: this.generateInvitationCode(),
-        });
+        }, role);
 
         const code = await this.userService.createVerificationCode(
             newUser as UserEntity
@@ -61,6 +66,8 @@ export class AuthorizationService {
 
         // find user who gave his invite code
         const inviter = await this.userService.findOneByInviteCode(inviteCode);
+        // find default user role from db and attach this role to new user
+        const role = await this.roleService.findOne(EUserRole.USER);
 
         // create new user and attach him to inviter
         const newUser = await this.userService.create({
@@ -72,7 +79,7 @@ export class AuthorizationService {
             phone: signUpDto.phone,
             name: signUpDto.name,
             invitationCode: this.generateInvitationCode(),
-        });
+        }, role);
 
         // attach new user to inviter
         inviter.invitedUser = newUser;

@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Param, Req, UseGuards, UsePipes } from '@nestjs/common';
 import { LikeService } from './like.service';
-import { AuthGuard } from '../authorization/guards/auth.guard';
+import { AuthGuard } from '../common/guards/auth.guard';
 import { Request } from 'express';
 import { TokenService } from '../token/token.service';
 import { ValidateLanguagePipe } from 'src/common/pipes/accept-language.pipe';

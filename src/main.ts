@@ -13,7 +13,6 @@ async function bootstrap() {
     });
     const config = app.get<ConfigService>(ConfigService);
 
-    // app.enableCors({ credentials: true, origin: '*' });
     app.use(cookieParser(config.get<string>('COOKIE_SECRET')));
     app.useGlobalPipes(new ValidationPipe());
 

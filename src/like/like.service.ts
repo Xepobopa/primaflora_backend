@@ -74,4 +74,13 @@ export class LikeService {
             select: { id: true, uuid: true },
         });
     }
+
+    public async deleteLikesByProduct(productId: number) {
+        return await this.likeRepository
+            .createQueryBuilder('like')
+            .delete()
+            .from(LikeEntity)
+            .where('product_id = :productId', { productId })
+            .execute()
+    }
 }

@@ -7,6 +7,7 @@ import { UserModule } from '../user/user.module';
 import { TokenModule } from '../token/token.module';
 import { MailerModule } from '../mailer/mailer.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { RoleModule } from 'src/role/role.module';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { CacheModule } from '@nestjs/cache-manager';
         UserModule,
         MailerModule,
         TokenModule,
+        RoleModule
     ],
     controllers: [AuthorizationController],
     providers: [AuthorizationService],

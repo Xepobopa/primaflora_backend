@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CartEntity } from '../entity/cart.entity';
@@ -12,6 +12,7 @@ export class CartService {
         @InjectRepository(CartEntity)
         private cartRepository: Repository<CartEntity>,
         private readonly userService: UserService,
+        @Inject(forwardRef(() => ProductsService))
         private readonly productService: ProductsService
     ) {}
 
@@ -75,6 +76,15 @@ export class CartService {
                     }
                 }
             })
+    }
+
+    async deleteByProductId(productId: number) {
+        return await this.cartRepository
+            .createQueryBuilder('cart')
+            .delete()
+            .from(CartEntity)
+            .where('cart."product_id" = :productId', { productId })
+            .execute();
     }
 
     // async update(cartItemId: string, changes: UpdateCartDto) {
