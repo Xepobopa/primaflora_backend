@@ -25,7 +25,7 @@ export class CartService {
         const existingCartItem = await this.cartRepository
             .createQueryBuilder('cart')
             .where('cart.userId = :userId', { userId: user.id })
-            .andWhere('cart.productId = :productId', { productId: product.id })
+            .andWhere('cart.product_id = :productId', { productId: product.id })
             .getOne();
 
         console.log('ExistingCartItem => ', existingCartItem);
@@ -33,10 +33,14 @@ export class CartService {
         if (existingCartItem) {
             // Update the quantity if the cart item exists
             existingCartItem.quantity += newCart.quantity;
-            return this.cartRepository.save(existingCartItem);
+            return await this.cartRepository.save(existingCartItem);
         } else {
             // Create a new cart item if it does not exist
-            return this.cartRepository.save({ ...newCart, user, product });
+            return await this.cartRepository.save({
+                quantity: newCart.quantity,
+                product,
+                user,
+            });
         }
 
         // OLD
@@ -72,7 +76,6 @@ export class CartService {
                         title: translate[0].title,
                         shortDesc: translate[0].shortDesc,
                         language: translate[0].language,
-                        ...cartItem.product,
                     }
                 }
             })

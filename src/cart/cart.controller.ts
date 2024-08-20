@@ -25,8 +25,8 @@ export class CartController {
     @Post()
     create(@Body() newCart: CreateCartDto, @Req() req: Request) {
         const token = req.headers.authorization.replace('Bearer ', '');
-        const userFromToken = this.tokenService.verifyToken(token, 'access');
-        return this.cartService.create(newCart, userFromToken.uuid);
+        const userUid = this.tokenService.verifyToken(token, 'access').uuid;
+        return this.cartService.create(newCart, userUid);
     }
 
     @Get('/getAll')
@@ -34,6 +34,7 @@ export class CartController {
     findAll(@Req() req: Request, @AcceptLanguage() language: string) {
         const token = req.headers.authorization.replace('Bearer ', '');
         const userFromToken = this.tokenService.verifyToken(token, 'access');
+        console.log('UserFromToken -> ', userFromToken);
         return this.cartService.findAll(userFromToken.uuid, language);
     }
 
