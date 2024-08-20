@@ -9,6 +9,7 @@ import { LikeModule } from 'src/like/like.module';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { ProductTranslateEntity } from 'src/entity/product_t.entity';
 import { CartModule } from 'src/cart/cart.module';
+import { Xitem } from 'src/entities_from_db/entities/xitem.entity';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { CartModule } from 'src/cart/cart.module';
             ProductEntity,
             ProductTranslateEntity,
             CommentEntity,
+            Xitem
         ]),
         CategoriesModule,
         TokenModule,

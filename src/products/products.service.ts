@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentEntity } from 'src/entity/comment.entity';
 import { TokenService } from 'src/token/token.service';
@@ -10,6 +10,8 @@ import { CategoriesService } from 'src/categories/categories.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductTranslateEntity } from 'src/entity/product_t.entity';
 import { CartService } from 'src/cart/cart.service';
+import { Xitem } from 'src/entities_from_db/entities/xitem.entity';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -54,11 +56,52 @@ export class ProductsService {
         });
     }
 
-    public async getOneWithComments(uuid: string, token: string, language: string) {
+    public async getAll(language: string) {
+        const res =  await this.productRepository
+            .createQueryBuilder('product')
+            .select(['product.uuid', 'product.id', 'product.createdAt', 'product.price_currency'])
+            .leftJoinAndSelect('product.category', 'category')
+            .leftJoin('category.translate', 'category_t')
+            .addSelect(['category_t.name', 'category_t.language'])
+            .leftJoin('product.translate', 'product_t')
+            .addSelect(['product_t.title', 'product_t.language'])
+            .where('product_t.language = :language', { language })
+            .andWhere('category_t.language = :language', { language })
+            .getMany();
+
+        return res.map(product => {
+            // Extract the necessary translations from the nested arrays
+            const categoryTranslation = product.category.translate[0];
+            const productTranslation = product.translate[0];
+
+            // Return the transformed product
+            return {
+                id: product.id,
+                uuid: product.uuid,
+                createdAt: product.createdAt,
+                price_currency: product.price_currency,
+                category: {
+                id: product.category.id,
+                uuid: product.category.uuid,
+                createdAt: product.category.createdAt,
+                updatedAt: product.category.updatedAt,
+                image: product.category.image,
+                name: categoryTranslation?.name,
+                language: categoryTranslation?.language,
+                },
+                title: productTranslation?.title,
+                language: productTranslation?.language,
+            };
+        });    
+    }
+
+    public async getOneWithComments(uuid: string, language: string, token?: string) {
         // const res = await this.productRepository.findOne({
         //     where: { uuid },
         //     relations: ['comments', 'comments.user', 'category'],
         // });
+        console.log('uuid => ', uuid);
+        console.log('language => ', language);
         const res = await this.productRepository
             .createQueryBuilder('product')
             .leftJoinAndSelect('product.comments', 'comments')
@@ -66,12 +109,18 @@ export class ProductsService {
             .leftJoinAndSelect('product.category', 'category')
             .leftJoin('product.translate', 'product_t')
             .addSelect(['product_t.title', 'product_t.language', 'product_t.shortDesc', 'product_t.desc'])
+            .leftJoin('category.translate', 'category_t')
+            .addSelect(['category_t.name', 'category_t.language'])
             .where('product.uuid = :productUid', { productUid: uuid })
             .andWhere('product_t.language = :language', { language })
-            .getOne()
+            .andWhere('category_t.language = :language', { language })
+            .getOne();
+
+        console.log('res => ', res);
  
+        let updatedRes;
         const { translate, ...other } = res;
-        const updatedRes = {
+        updatedRes = {
             ...other,
             title: translate[0].title,
             desc: translate[0].desc,
@@ -120,18 +169,20 @@ export class ProductsService {
         return await this.likeService.setLike(userPayload.uuid, product);
     }
 
-    public async create(createProductDto: CreateProductDto) {
+    public async create(createProductDto: Omit<CreateProductDto, 'rating'>) {
         const category = await this.categoryService.findSubcategoryById(
             createProductDto.categoryId
         );
 
         const newProduct = await this.productRepository.create({
             ...createProductDto,
+            rating: 0,
             category: category,
         });
 
         const translations = [];
         for (const translation of createProductDto.translate) {
+            console.log('Translation: ', translation);
             const newTranslate = await this.productTranslateRepository.save(translation);
             translations.push(newTranslate);
         }
@@ -140,6 +191,39 @@ export class ProductsService {
         return await this.productRepository.save(newProduct);
     }
 
+    async update(uuid: string, updateProductDto: UpdateProductDto, language: string) {
+        const queryBulder = this.productRepository
+            .createQueryBuilder('product')
+            .where('product.uuid = :productUid', { productUid: uuid });
+            if(updateProductDto.translate) {
+                queryBulder.leftJoinAndSelect('product.translate', 'product_t')
+                    .andWhere('product_t.language = :language', { language });
+            }
+
+        const product = await queryBulder.getOne();
+
+        if (!product) {
+            throw new BadRequestException('Wrong uuid!');
+        }
+
+        if ('translate' in updateProductDto) {
+            const { translate, ...other } = updateProductDto;
+
+            await this.productTranslateRepository.save({
+                ...product.translate[0],
+                ...updateProductDto.translate,
+            });
+            return await this.productRepository.save({
+                ...product,
+                ...other,
+            });
+        } else {
+            return await this.productRepository.save({
+                ...product,
+                ...updateProductDto as Partial<ProductEntity>,
+            });
+        }
+    }
 
     async delete(uuid: string) {
         const product = await this.productRepository.findOneByOrFail({ uuid });
