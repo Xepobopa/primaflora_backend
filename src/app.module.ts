@@ -16,7 +16,6 @@ import { RolesGuard } from './common/guards/roles.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { TokenService } from './token/token.service';
 import { RoleModule } from './role/role.module';
-import { XitemModule } from './xitem/xitem.module';
 
 @Global()
 @Module({
@@ -40,7 +39,6 @@ import { XitemModule } from './xitem/xitem.module';
         CartModule,
         LikeModule,
         RoleModule,
-        XitemModule,
     ],
     controllers: [AppController],
 })

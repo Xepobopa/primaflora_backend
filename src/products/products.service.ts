@@ -10,7 +10,6 @@ import { CategoriesService } from 'src/categories/categories.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductTranslateEntity } from 'src/entity/product_t.entity';
 import { CartService } from 'src/cart/cart.service';
-import { Xitem } from 'src/entities_from_db/entities/xitem.entity';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
